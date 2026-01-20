@@ -1,0 +1,40 @@
+RENDER DEPLOYMENT GUIDE
+
+PART 1: SERVER (Web Service) - [COMPLETED]
+------------------------------------------
+(You have already finished this step)
+- Service Type: Web Service
+- Root Directory: server
+- Build Command: npm install
+- Start Command: node index.js
+- Environment Variables: MONGO_URI, JWT_SECRET, PORT (auto)
+
+*** LINKING ACTION ***
+- Add Environment Variable: CLIENT_URL
+- Value: https://carconnect-v563.onrender.com (Your deployed Request URL)
+
+
+PART 2: CLIENT (Static Site) - [COMPLETED]
+------------------------------------------
+- Service Type: Static Site
+- Root Directory: client
+- Build Command: npm install; npm run build
+- Publish Directory: build
+- Rewrite Rule: Source: /*, Dest: /index.html, Action: Rewrite
+
+*** LINKING ACTION ***
+- Add Environment Variable: REACT_APP_API_URL
+- Value: https://carconnect-server.onrender.com/api (Your deployed Server URL + /api)
+
+
+SUMMARY OF LINKS:
+-----------------
+1. Go to Render Dashboard -> Select your SERVER service -> Environment.
+   Add Name: CLIENT_URL
+   Add Value: https://carconnect-v563.onrender.com
+
+2. Go to Render Dashboard -> Select your CLIENT service -> Environment.
+   Add Name: REACT_APP_API_URL
+   Add Value: https://carconnect-server.onrender.com/api
+
+3. Redeploy both services manually if they don't auto-update.

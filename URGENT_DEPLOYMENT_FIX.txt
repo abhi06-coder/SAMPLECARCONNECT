@@ -1,0 +1,28 @@
+CRITICAL FIX FOR "LOCALHOST" ERROR
+
+The Issue:
+----------
+Your deployed frontend is trying to connect to 'http://localhost:5000' because it didn't pick up the new Environment Variable.
+
+React Environment Variables are set at BUILD TIME. Adding them to the dashboard is not enough; you must REBUILD the app.
+
+Step-by-Step Fix:
+-----------------
+
+1. Verify Variables:
+   - Go to Render Dashboard -> Client Service -> Environment.
+   - Ensure 'REACT_APP_API_URL' is set to: https://carconnect-server.onrender.com/api
+   
+   - Go to Render Dashboard -> Server Service -> Environment.
+   - Ensure 'CLIENT_URL' is set to: https://carconnect-v563.onrender.com
+
+2. **MANDATORY REDEPLOY (The Missing Step)**:
+   - Go to your CLIENT Service on Render.
+   - Click "Manual Deploy" -> "Deploy latest commit" (or "Clear build cache & deploy" to be safe).
+   - Wait for the build to finish.
+
+3. Redeploy Server (Just in case):
+   - Go to your SERVER Service.
+   - Click "Manual Deploy" -> "Deploy latest commit".
+
+Once the Client finishes building, refresh your website. It should now point to the correct https:// server URL.
