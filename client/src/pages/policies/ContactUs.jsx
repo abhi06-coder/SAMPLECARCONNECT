@@ -16,36 +16,36 @@ const ContactUs = () => {
 
                     <div className="space-y-6 text-text-muted leading-relaxed">
                         <p>
-                            We value your feedback and are here to help with any questions or concerns you may have regarding CarConnect.
+                            You may contact us using the information below:
                         </p>
 
                         <div className="bg-surface/30 p-6 rounded-2xl border border-white/5 space-y-4">
-                            <h3 className="text-xl font-bold text-text">Get in Touch</h3>
+                            <h3 className="text-xl font-bold text-text">Merchant Information</h3>
 
                             <div>
-                                <p className="font-semibold text-text">Platform Owner / Administrator:</p>
-                                <p>CarConnect Admin Team</p>
+                                <p className="font-semibold text-text">Legal Entity Name:</p>
+                                <p>KRUSHNA RAKESH GANGURDE</p>
                             </div>
 
                             <div>
-                                <p className="font-semibold text-text">Email Support:</p>
-                                <p><a href="mailto:support@carconnect.demo" className="text-primary hover:underline">support@carconnect.demo</a></p>
+                                <p className="font-semibold text-text">Registered Address:</p>
+                                <p>FLAT NO 18 BUILDING NO 2 SAIBHANDHAN, SOCIETY INDIRA NAGAR WADALA PATHARDI ROAD, NASHIK, MAHARASHTRA 422009</p>
                             </div>
 
                             <div>
                                 <p className="font-semibold text-text">Operational Address:</p>
-                                <p>CarConnect Project HQ<br />
-                                    123 Education Lane, Tech Campus<br />
-                                    Mumbai, Maharashtra, India - 400001</p>
+                                <p>FLAT NO 18 BUILDING NO 2 SAIBHANDHAN, SOCIETY INDIRA NAGAR WADALA PATHARDI ROAD, NASHIK, MAHARASHTRA 422009</p>
                             </div>
-                        </div>
 
-                        <div className="bg-surface/30 p-6 rounded-2xl border border-white/5">
-                            <h3 className="text-xl font-bold text-text mb-2">Important Note</h3>
-                            <p className="text-sm">
-                                This web application is developed strictly for <strong>educational and project demonstration purposes</strong>.
-                                No real commercial services are provided. Payments processed are for demonstration only.
-                            </p>
+                            <div>
+                                <p className="font-semibold text-text">Telephone No:</p>
+                                <p>8999283790</p>
+                            </div>
+
+                            <div>
+                                <p className="font-semibold text-text">E-Mail ID:</p>
+                                <p><a href="mailto:tycog12025@gmail.com" className="text-primary hover:underline">tycog12025@gmail.com</a></p>
+                            </div>
                         </div>
                     </div>
                 </motion.div>

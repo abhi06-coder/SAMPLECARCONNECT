@@ -16,39 +16,54 @@ const RefundPolicy = () => {
 
                     <div className="space-y-6 text-text-muted leading-relaxed">
                         <section>
-                            <h2 className="text-xl font-bold text-text mb-3">1. Cancellation by Passenger</h2>
                             <p>
-                                Passengers can cancel their ride request at any time before the ride starts.
+                                KRUSHNA RAKESH GANGURDE believes in helping its customers as far as possible, and has therefore a liberal cancellation policy.
                             </p>
-                            <ul className="list-disc pl-5 space-y-2 mt-2">
-                                <li><strong>Before Appproval:</strong> Full refund.</li>
-                                <li><strong>After Approval ( &gt; 24 hours before ride):</strong> Full refund.</li>
-                                <li><strong>Last Minute Cancellation ( &lt; 24 hours):</strong> A small cancellation fee may apply.</li>
+                        </section>
+
+                        <section>
+                            <h2 className="text-xl font-bold text-text mb-3">1. Cancellation Policy</h2>
+                            <ul className="list-disc pl-5 space-y-2">
+                                <li>
+                                    Cancellations will be considered only if the request is made within <strong>1-2 days</strong> of placing the order.
+                                </li>
+                                <li>
+                                    However, the cancellation request may not be entertained if the orders have been communicated to the vendors/merchants and they have initiated the process of shipping them.
+                                </li>
+                                <li>
+                                    KRUSHNA RAKESH GANGURDE does not accept cancellation requests for perishable items like flowers, eatables etc. However, refund/replacement can be made if the customer establishes that the quality of product delivered is not good.
+                                </li>
                             </ul>
                         </section>
 
                         <section>
-                            <h2 className="text-xl font-bold text-text mb-3">2. Cancellation by Driver</h2>
+                            <h2 className="text-xl font-bold text-text mb-3">2. Damaged or Defective Items</h2>
                             <p>
-                                If a driver cancels a ride, passengers are eligible for a <strong>full refund</strong> of the booking amount.
+                                In case of receipt of damaged or defective items please report the same to our Customer Service team. The request will, however, be entertained once the merchant has checked and determined the same at his own end.
+                            </p>
+                            <p className="mt-2">
+                                This should be reported within <strong>1-2 days</strong> of receipt of the products.
                             </p>
                         </section>
 
                         <section>
-                            <h2 className="text-xl font-bold text-text mb-3">3. Refund Processing</h2>
+                            <h2 className="text-xl font-bold text-text mb-3">3. Product Not As Expected</h2>
                             <p>
-                                All refunds are processed securely via <strong>Razorpay</strong> to the original payment method.
+                                In case you feel that the product received is not as shown on the site or as per your expectations, you must bring it to the notice of our customer service within <strong>1-2 days</strong> of receiving the product. The Customer Service Team after looking into your complaint will take an appropriate decision.
                             </p>
-                            <ul className="list-disc pl-5 space-y-2 mt-2">
-                                <li>Refunds typically take <strong>5-7 business days</strong> to reflect in your account, depending on your bank's policies.</li>
-                                <li>In case of any delays, please contact <a href="mailto:support@carconnect.demo" className="text-primary hover:underline">support@carconnect.demo</a>.</li>
-                            </ul>
                         </section>
 
                         <section>
-                            <h2 className="text-xl font-bold text-text mb-3">4. Educational Project Disclaimer</h2>
+                            <h2 className="text-xl font-bold text-text mb-3">4. Warranty</h2>
                             <p>
-                                As this is a demonstration project, no real money is transferred. "Refunds" in this context refer to the simulated reversal of simulated transactions.
+                                In case of complaints regarding products that come with a warranty from manufacturers, please refer the issue to them.
+                            </p>
+                        </section>
+
+                        <section>
+                            <h2 className="text-xl font-bold text-text mb-3">5. Refund Processing</h2>
+                            <p>
+                                In case of any Refunds approved by the KRUSHNA RAKESH GANGURDE, it’ll take <strong>1-2 days</strong> for the refund to be processed to the end customer.
                             </p>
                         </section>
                     </div>
