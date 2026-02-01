@@ -9,9 +9,13 @@ import ProfilePreviewModal from '../components/ProfilePreviewModal';
 import Button from '../components/ui/Button';
 import Input from '../components/ui/Input';
 import Badge from '../components/ui/Badge';
+import DepositButton from '../components/DepositButton';
+import Feedback from '../components/ProfileSections/Feedback';
+import Reports from '../components/ProfileSections/Reports';
+import Announcements from '../components/ProfileSections/Announcements';
 
 const Profile = () => {
-    const { user, updateProfile, logout, uploadProfilePicture, loading } = useAuth();
+    const { user, updateProfile, logout, uploadProfilePicture, uploadQrCode, loading } = useAuth();
     const navigate = useNavigate();
 
     // Form State
@@ -30,12 +34,16 @@ const Profile = () => {
         vehicleModel: '',
         vehiclePlate: '',
         vehicleCapacity: '',
+        upiId: '',
+        qrCodeUrl: '',
     });
 
     // UI States
     const [isEditing, setIsEditing] = useState(false);
     const [activeSection, setActiveSection] = useState('details'); // 'details' | 'safety' | 'driver'
     const [showPreview, setShowPreview] = useState(false);
+    const [showRefundModal, setShowRefundModal] = useState(false);
+    const [refundReason, setRefundReason] = useState('');
     const [message, setMessage] = useState('');
     const [error, setError] = useState('');
 
@@ -72,6 +80,8 @@ const Profile = () => {
                 vehicleModel: user.vehicle?.model || '',
                 vehiclePlate: user.vehicle?.plateNumber || '',
                 vehicleCapacity: user.vehicle?.capacity || '',
+                upiId: user.paymentDetails?.upiId || '',
+                qrCodeUrl: user.paymentDetails?.qrCodeUrl || '',
             });
         }
     }, [user]);
@@ -103,6 +113,10 @@ const Profile = () => {
                     model: formData.vehicleModel,
                     plateNumber: formData.vehiclePlate,
                     capacity: formData.vehicleCapacity
+                },
+                paymentDetails: {
+                    upiId: formData.upiId,
+                    qrCodeUrl: formData.qrCodeUrl
                 }
             });
 
@@ -154,18 +168,29 @@ const Profile = () => {
         }
     };
 
-    const handleDepositToggle = async () => {
-        try {
-            const res = await api.put('/users/profile/deposit');
+    const handleRequestRefund = async (e) => {
+        e.preventDefault();
+        setError('');
+        setMessage('');
 
+        if (!refundReason) return setError("Please provide a reason for refund.");
+
+        try {
+            const res = await api.post('/payment/request-refund', { reason: refundReason });
             if (res.data.success) {
-                setMessage(res.data.message);
-                window.location.reload();
+                setMessage("Refund request submitted successfully. Admin will review it.");
+                setShowRefundModal(false);
+                setRefundReason('');
             }
         } catch (err) {
-            console.error("Deposit Toggle Error", err);
-            setError("Failed to update deposit status.");
+            console.error("Refund Request Error", err);
+            setError(err.response?.data?.message || "Failed to submit refund request.");
         }
+    };
+
+    const handleDepositSuccess = () => {
+        setMessage("Deposit paid successfully! You are now a driver.");
+        window.location.reload();
     };
 
     // Image Upload
@@ -182,6 +207,24 @@ const Profile = () => {
         if (uploadRes.success) {
             setFormData(prev => ({ ...prev, profilePicture: uploadRes.url }));
             setMessage('Image uploaded. Click Save to apply.');
+        } else {
+            setError(uploadRes.message);
+        }
+    };
+
+    const handleQrUpload = async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+
+        setMessage('Uploading QR Code...');
+        const uploadData = new FormData();
+        uploadData.append('qrCode', file);
+
+        const uploadRes = await uploadQrCode(uploadData);
+
+        if (uploadRes.success) {
+            setFormData(prev => ({ ...prev, qrCodeUrl: uploadRes.url }));
+            setMessage('QR Code uploaded. Click Save to apply.');
         } else {
             setError(uploadRes.message);
         }
@@ -298,7 +341,7 @@ const Profile = () => {
 
                     {/* Content Tabs */}
                     <div className="border-t border-border bg-background/50 backdrop-blur-sm sticky top-0 z-20 px-6 md:px-12 flex gap-8 overflow-x-auto no-scrollbar">
-                        {['details', 'safety', 'driver', 'preferences'].map((tab) => (
+                        {['details', 'safety', 'driver', 'preferences', 'feedback', 'reports', 'announcements'].map((tab) => (
                             <button
                                 key={tab}
                                 onClick={() => setActiveSection(tab)}
@@ -492,40 +535,39 @@ const Profile = () => {
                                             <div className="flex justify-between items-center mb-4">
                                                 <div>
                                                     <h4 className="font-bold text-text">Security Deposit</h4>
-                                                    <p className="text-sm text-text-muted mt-1">Status:
-                                                        <span className={`font-bold ml-2 ${user?.depositPaid ? 'text-success' : 'text-warning'}`}>
-                                                            {user?.depositPaid ? 'Paid (Active)' : 'Unpaid (Inactive)'}
+                                                    <p className="text-sm text-text-muted mt-1">Wallet Balance:
+                                                        <span className={`font-bold ml-2 ${user?.walletBalance >= 100 ? 'text-success' : 'text-warning'}`}>
+                                                            ₹{user?.walletBalance || 0}
                                                         </span>
+                                                        {user?.walletBalance >= 100 && (
+                                                            <span className="ml-2 text-sm text-muted-foreground">(Can offer rides)</span>
+                                                        )}
                                                     </p>
                                                 </div>
-                                                {user?.depositPaid ? (
+                                                {user?.walletBalance >= 100 ? (
                                                     <Button
                                                         type="button"
-                                                        onClick={() => {
-                                                            if (window.confirm("Are you sure you want to withdraw your deposit? You will effectively stop being a committed driver.")) {
-                                                                handleDepositToggle();
-                                                            }
-                                                        }}
+                                                        onClick={() => setShowRefundModal(true)}
                                                         variant="outline"
                                                         className="text-error border-error/30 hover:bg-error/5 hover:border-error"
                                                     >
-                                                        Withdraw
+                                                        Withdraw Balance
                                                     </Button>
+                                                ) : user?.walletBalance > 0 ? (
+                                                    <div className="text-xs text-warning">
+                                                        Balance too low to withdraw (need ₹100)
+                                                    </div>
                                                 ) : (
-                                                    <Button
-                                                        type="button"
-                                                        onClick={() => navigate('/driver-onboarding')}
-                                                        variant="primary"
+                                                    <DepositButton
+                                                        onSuccess={handleDepositSuccess}
                                                         className="shadow-lg shadow-primary/20"
-                                                    >
-                                                        Pay Deposit (₹100)
-                                                    </Button>
+                                                    />
                                                 )}
                                             </div>
                                             <p className="text-xs text-text-muted bg-neutral p-3 rounded-lg border border-border/50">
-                                                {user?.depositPaid
-                                                    ? "Your deposit is secure. Withdrawing it will revoke your 'Committed Driver' status."
-                                                    : "Pay the security deposit to become a Committed Driver and publish rides."}
+                                                {user?.walletBalance >= 100
+                                                    ? "⚠️ Withdrawing will revoke your driver status. Refunds take 5-7 business days to process."
+                                                    : "Pay ₹100 security deposit to become a driver. This acts as your wallet balance."}
                                             </p>
                                         </div>
 
@@ -575,6 +617,41 @@ const Profile = () => {
                                                         />
                                                     </div>
                                                 </div>
+
+                                                <div className="bg-surface border border-border p-6 rounded-2xl shadow-sm mt-6">
+                                                    <h4 className="font-bold text-text mb-6">Payment Information</h4>
+                                                    <p className="text-xs text-text-muted mb-4">Required to accept "Online" payments.</p>
+                                                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                                        <Input
+                                                            label="UPI ID"
+                                                            placeholder="username@upi"
+                                                            name="upiId"
+                                                            value={formData.upiId}
+                                                            onChange={handleChange}
+                                                            disabled={!isEditing}
+                                                            fullWidth
+                                                        />
+
+                                                        <div>
+                                                            <label className="block text-text font-medium text-sm mb-1.5 px-1">QR Code</label>
+                                                            <div className="flex items-center gap-4">
+                                                                {formData.qrCodeUrl && (
+                                                                    <div className="w-16 h-16 border rounded bg-neutral flex items-center justify-center overflow-hidden">
+                                                                        <img src={formData.qrCodeUrl} alt="QR" className="w-full h-full object-contain" />
+                                                                    </div>
+                                                                )}
+                                                                {isEditing && (
+                                                                    <input
+                                                                        type="file"
+                                                                        accept="image/*"
+                                                                        onChange={handleQrUpload}
+                                                                        className="text-sm text-text-muted file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-primary/10 file:text-primary hover:file:bg-primary/20"
+                                                                    />
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                </div>
                                             </div>
                                         ) : (
                                             <div className="text-center py-12 bg-neutral/30 rounded-3xl border-2 border-dashed border-border p-6">
@@ -622,6 +699,10 @@ const Profile = () => {
                                         </div>
                                     </motion.div>
                                 )}
+
+                                {activeSection === 'feedback' && <Feedback />}
+                                {activeSection === 'reports' && <Reports />}
+                                {activeSection === 'announcements' && <Announcements />}
                             </AnimatePresence>
 
                             {/* Floating Save Button */}
@@ -658,6 +739,31 @@ const Profile = () => {
                     isOpen={showPreview}
                     onClose={() => setShowPreview(false)}
                 />
+
+                {/* Refund Modal */}
+                {
+                    showRefundModal && (
+                        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm">
+                            <div className="bg-surface rounded-2xl shadow-xl w-full max-w-md p-6 border border-border animate-fade-in">
+                                <h3 className="text-xl font-bold text-text mb-4">Request Deposit Refund</h3>
+
+                                <Input
+                                    label="Reason for Refund"
+                                    value={refundReason}
+                                    onChange={(e) => setRefundReason(e.target.value)}
+                                    placeholder="Why do you want a refund?"
+                                    fullWidth
+                                    autoFocus
+                                />
+
+                                <div className="flex justify-end gap-3 mt-6">
+                                    <Button variant="ghost" onClick={() => setShowRefundModal(false)}>Cancel</Button>
+                                    <Button variant="primary" onClick={handleRequestRefund}>Submit Request</Button>
+                                </div>
+                            </div>
+                        </div>
+                    )
+                }
             </div >
         </div >
     );

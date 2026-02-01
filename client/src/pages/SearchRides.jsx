@@ -100,6 +100,19 @@ const SearchRides = () => {
 
     const handleSearch = async (e) => {
         e?.preventDefault();
+
+        // Input Validation
+        if (!searchParams.source || !searchParams.destination || !searchParams.date) {
+            // Using a simple alert for now, or could use a toast state if available
+            // Since showToast is for "Results updated", let's use a browser alert or add a specific error state
+            // Given the context, alert is quick, but let's check if we can make it nicer.
+            // There is no dedicated error toast component visible in the snippet, so I'll use alert for immediate feedback
+            // or better, set a temporary error state if I can add it, but modifying state structure might be invasive.
+            // User asked for "error handling", so a clear alert is a good start.
+            alert("Please fill in all fields: Source, Destination, and Date.");
+            return;
+        }
+
         setLoading(true);
         setSearched(true);
         setRides([]); // Clear previous results while loading
@@ -238,7 +251,7 @@ const SearchRides = () => {
     if (!isLoaded) return <div className="min-h-screen flex items-center justify-center"><div className="w-10 h-10 border-4 border-primary border-t-transparent rounded-full animate-spin"></div></div>;
 
     return (
-        <div className="min-h-screen bg-neutral/30 pb-20 relative">
+        <div className="min-h-screen bg-background pt-8 pb-20 px-4 md:px-8 relative">
             {/* Sticky Context Header */}
             <AnimatePresence>
                 {showStickyHeader && searchParams.source && (
@@ -323,13 +336,25 @@ const SearchRides = () => {
                                 <div>
                                     <label className="block text-sm font-medium text-text-muted mb-2">Payment Preference</label>
                                     <div className="grid grid-cols-2 gap-3">
-                                        <button
-                                            onClick={() => setBookingData({ ...bookingData, paymentMode: 'online' })}
-                                            className={`py-3 rounded-xl font-bold border-2 transition-all flex flex-col items-center gap-1 ${bookingData.paymentMode === 'online' ? 'border-primary bg-primary/5 text-primary' : 'border-border bg-background text-text-muted hover:bg-neutral'}`}
-                                        >
-                                            <span className="text-lg">💳</span>
-                                            <span className="text-sm">Online</span>
-                                        </button>
+                                        {bookingData.ride?.driver?.paymentDetails && (bookingData.ride.driver.paymentDetails.upiId || bookingData.ride.driver.paymentDetails.qrCodeUrl) ? (
+                                            <button
+                                                onClick={() => setBookingData({ ...bookingData, paymentMode: 'online' })}
+                                                className={`py-3 rounded-xl font-bold border-2 transition-all flex flex-col items-center gap-1 ${bookingData.paymentMode === 'online' ? 'border-primary bg-primary/5 text-primary' : 'border-border bg-background text-text-muted hover:bg-neutral'}`}
+                                            >
+                                                <span className="text-lg">💳</span>
+                                                <span className="text-sm">Online</span>
+                                            </button>
+                                        ) : (
+                                            <button
+                                                disabled
+                                                className="py-3 rounded-xl font-bold border-2 border-border bg-neutral/50 text-text-muted/50 flex flex-col items-center gap-1 opacity-60 cursor-not-allowed"
+                                                title="Driver has not set up online payment"
+                                            >
+                                                <span className="text-lg">💳</span>
+                                                <span className="text-sm">Online (Unavailable)</span>
+                                            </button>
+                                        )}
+
                                         <button
                                             onClick={() => setBookingData({ ...bookingData, paymentMode: 'cash' })}
                                             className={`py-3 rounded-xl font-bold border-2 transition-all flex flex-col items-center gap-1 ${bookingData.paymentMode === 'cash' ? 'border-orange-500 bg-orange-50 text-orange-600' : 'border-border bg-background text-text-muted hover:bg-neutral'}`}
@@ -341,6 +366,29 @@ const SearchRides = () => {
                                     <p className="text-xs text-text-muted mt-2">
                                         {bookingData.paymentMode === 'online' ? 'Pay securely via the app after acceptance.' : 'Pay the driver directly upon meeting.'}
                                     </p>
+
+                                    {bookingData.paymentMode === 'online' && bookingData.ride?.driver?.paymentDetails && (
+                                        <div className="mt-4 p-4 bg-surface border border-border rounded-xl">
+                                            <h4 className="text-sm font-bold text-text mb-2">Driver's Payment Info</h4>
+                                            <div className="flex flex-col gap-3">
+                                                {bookingData.ride.driver.paymentDetails.upiId && (
+                                                    <div className="flex justify-between items-center bg-neutral/50 p-2 rounded-lg">
+                                                        <span className="text-xs text-text-muted">UPI ID</span>
+                                                        <span className="text-sm font-mono font-bold text-text select-all">{bookingData.ride.driver.paymentDetails.upiId}</span>
+                                                    </div>
+                                                )}
+                                                {bookingData.ride.driver.paymentDetails.qrCodeUrl && (
+                                                    <div className="flex flex-col gap-1">
+                                                        <span className="text-xs text-text-muted">QR Code</span>
+                                                        <div className="w-32 h-32 bg-white p-2 rounded-lg border border-border mx-auto">
+                                                            <img src={bookingData.ride.driver.paymentDetails.qrCodeUrl} alt="Payment QR" className="w-full h-full object-contain" />
+                                                        </div>
+                                                        <p className="text-[10px] text-center text-text-muted">Scan to pay</p>
+                                                    </div>
+                                                )}
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 
@@ -367,84 +415,100 @@ const SearchRides = () => {
             </AnimatePresence>
 
             {/* Search Form */}
-            <div ref={searchFormRef} className="bg-surface border-b border-border relative z-30 shadow-sm transition-all duration-300">
-                <div className="container-custom py-8">
-                    <div className="max-w-4xl mx-auto">
-                        <div className="text-center mb-6">
-                            <h2 className="text-3xl font-bold font-heading text-text">Find your perfect ride</h2>
-                            <p className="text-text-muted mt-2 text-lg">Search rides along your route and find nearby drivers.</p>
-                        </div>
-
-                        <div className="bg-background p-1.5 rounded-2xl shadow-xl ring-1 ring-border/50">
-                            <form onSubmit={handleSearch} className="bg-surface rounded-xl p-4 md:p-6 grid grid-cols-1 md:grid-cols-12 gap-4 items-end">
-                                <div className="md:col-span-4 group">
-                                    <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 ml-1 group-focus-within:text-primary transition-colors">From</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg className="h-5 w-5 text-text-muted group-focus-within:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                                        </div>
-                                        <PlaceAutocomplete
-                                            placeholder="Enter pickup city..."
-                                            onPlaceSelect={handleSourceSelect}
-                                            className="w-full pl-10 pr-4 py-3 bg-neutral/50 hover:bg-neutral border-transparent focus:border-primary focus:bg-background rounded-xl transition-all font-medium text-text placeholder:text-text-muted/60 focus:ring-4 focus:ring-primary/10 outline-none"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="md:col-span-4 group">
-                                    <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 ml-1 group-focus-within:text-primary transition-colors">To</label>
-                                    <div className="relative">
-                                        <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                            <svg className="h-5 w-5 text-text-muted group-focus-within:text-primary transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" /><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" /></svg>
-                                        </div>
-                                        <PlaceAutocomplete
-                                            placeholder="Enter destination city..."
-                                            onPlaceSelect={handleDestSelect}
-                                            className="w-full pl-10 pr-4 py-3 bg-neutral/50 hover:bg-neutral border-transparent focus:border-primary focus:bg-background rounded-xl transition-all font-medium text-text placeholder:text-text-muted/60 focus:ring-4 focus:ring-primary/10 outline-none"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="md:col-span-2 group">
-                                    <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 ml-1 group-focus-within:text-primary transition-colors">Date</label>
-                                    <input
-                                        type="date"
-                                        name="date"
-                                        value={searchParams.date}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 bg-neutral/50 hover:bg-neutral border-transparent focus:border-primary focus:bg-background rounded-xl transition-all font-medium text-text focus:ring-4 focus:ring-primary/10 outline-none"
-                                    />
-                                </div>
-                                <div className="md:col-span-1 group">
-                                    <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 ml-1">Seats</label>
-                                    <input
-                                        type="number"
-                                        name="passengers"
-                                        min="1"
-                                        max="6"
-                                        value={searchParams.passengers}
-                                        onChange={handleChange}
-                                        className="w-full px-4 py-3 bg-neutral/50 hover:bg-neutral border-transparent focus:border-primary focus:bg-background rounded-xl transition-all font-medium text-text focus:ring-4 focus:ring-primary/10 outline-none text-center"
-                                    />
-                                </div>
-
-                                <div className="md:col-span-12 mt-2">
-                                    <Button
-                                        type="submit"
-                                        isLoading={loading}
-                                        size="lg"
-                                        fullWidth
-                                        rightIcon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>}
-                                    >
-                                        Search
-                                    </Button>
-                                </div>
-                            </form>
-                        </div>
-                    </div>
+            <div ref={searchFormRef} className="max-w-5xl mx-auto relative z-30 transition-all duration-300">
+                <div className="mb-8 text-center" >
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ duration: 0.5 }}
+                    >
+                        <h1 className="text-4xl font-bold font-heading text-text tracking-tight mb-2">
+                            Find your <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-secondary">perfect ride</span>
+                        </h1>
+                        <p className="text-text-muted text-lg max-w-2xl mx-auto">
+                            Connect with community, save money, and travel together.
+                        </p>
+                    </motion.div>
                 </div>
+
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.95 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    transition={{ duration: 0.4, delay: 0.1 }}
+                    className="bg-surface rounded-2xl shadow-xl border border-border/50 p-6 md:p-8 backdrop-blur-sm"
+                >
+                    <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
+                        <div className="md:col-span-4 group">
+                            <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 ml-1 group-focus-within:text-primary transition-colors">From</label>
+                            <div className="relative z-20">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-primary ring-4 ring-primary/20"></div>
+                                </div>
+                                <PlaceAutocomplete
+                                    placeholder="Enter pickup city..."
+                                    onPlaceSelect={handleSourceSelect}
+                                    className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-text font-medium placeholder:text-text-muted/60"
+                                />
+                            </div>
+                        </div>
+                        <div className="md:col-span-4 group">
+                            <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 ml-1 group-focus-within:text-primary transition-colors">To</label>
+                            <div className="relative z-10">
+                                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                                    <div className="w-2.5 h-2.5 rounded-full bg-secondary ring-4 ring-secondary/20"></div>
+                                </div>
+                                <PlaceAutocomplete
+                                    placeholder="Enter destination city..."
+                                    onPlaceSelect={handleDestSelect}
+                                    className="w-full pl-10 pr-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-text font-medium placeholder:text-text-muted/60"
+                                />
+                            </div>
+                        </div>
+                        <div className="md:col-span-2 group">
+                            <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 ml-1 group-focus-within:text-primary transition-colors">Date</label>
+                            <input
+                                type="date"
+                                name="date"
+                                value={searchParams.date}
+                                onChange={handleChange}
+                                className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-text font-medium dark:[color-scheme:dark]"
+                            />
+                        </div>
+                        <div className="md:col-span-2 group">
+                            <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 ml-1">Passengers</label>
+                            <div className="relative">
+                                <input
+                                    type="number"
+                                    name="passengers"
+                                    min="1"
+                                    max="6"
+                                    value={searchParams.passengers}
+                                    onChange={handleChange}
+                                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-text font-medium text-center"
+                                />
+                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-text-muted text-sm font-medium">
+
+                                </div>
+                            </div>
+                        </div>
+
+                        <div className="md:col-span-12 mt-2 flex justify-end">
+                            <Button
+                                type="submit"
+                                isLoading={loading}
+                                size="lg"
+                                className="w-full md:w-auto px-8"
+                                rightIcon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>}
+                            >
+                                Search Rides
+                            </Button>
+                        </div>
+                    </form>
+                </motion.div>
             </div>
 
             {/* Results Section */}
-            <div ref={resultsRef} className="container-custom max-w-5xl mt-8 scroll-mt-28">
+            <div ref={resultsRef} className="max-w-5xl mx-auto mt-12 scroll-mt-28">
                 {searched && (
                     <div className="animate-fade-in">
                         {/* Context Header */}
@@ -496,7 +560,7 @@ const SearchRides = () => {
                                 sortedRides.map(ride => (
                                     <Card
                                         key={ride._id}
-                                        className="overflow-hidden hover:shadow-lg transition-all duration-300 group border-l-4 border-l-primary"
+                                        className="overflow-hidden hover:shadow-xl hover:scale-[1.01] transition-all duration-300 group border-l-4 border-l-primary cursor-pointer relative"
                                         noPadding
                                     >
                                         <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-6 p-5">
@@ -736,7 +800,7 @@ const SearchRides = () => {
                     </div>
                 )}
             </div>
-        </div>
+        </div >
     );
 };
 

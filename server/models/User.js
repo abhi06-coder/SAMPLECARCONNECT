@@ -63,19 +63,47 @@ const userSchema = new mongoose.Schema({
         maxlength: 200,
         default: ''
     },
+    // Admin Panel - User Management Fields
+    status: {
+        type: String,
+        enum: ['ACTIVE', 'SOFT_BLOCKED', 'HARD_BLOCKED'],
+        default: 'ACTIVE'
+    },
+    blockedUntil: {
+        type: Date,
+        default: null
+    },
+    blockReason: {
+        type: String,
+        default: null
+    },
     // New fields for Driver Role & Accountability
     isDriver: {
         type: Boolean,
         default: false,
     },
-    depositPaid: {
-        type: Boolean,
-        default: false,
+    // Wallet-based deposit system
+    walletBalance: {
+        type: Number,
+        default: 0,
+    },
+    // Razorpay payment tracking
+    razorpayPaymentId: {
+        type: String,
+        default: null,
+    },
+    razorpayOrderId: {
+        type: String,
+        default: null,
     },
     vehicle: {
         model: { type: String },
         plateNumber: { type: String },
         capacity: { type: Number },
+    },
+    paymentDetails: {
+        upiId: { type: String, default: '' },
+        qrCodeUrl: { type: String, default: '' }
     },
 }, {
     timestamps: true,
@@ -94,6 +122,11 @@ userSchema.pre('save', async function () {
 
     const salt = await bcrypt.genSalt(10);
     this.password = await bcrypt.hash(this.password, salt);
+});
+
+// Virtual field for backward compatibility
+userSchema.virtual('depositPaid').get(function () {
+    return this.walletBalance >= 100;
 });
 
 const User = mongoose.model('User', userSchema);

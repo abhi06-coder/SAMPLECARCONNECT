@@ -7,6 +7,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
 import Badge from '../components/ui/Badge';
+import GeometricBackground from '../components/GeometricBackground';
+import GradientText from '../components/GradientText';
 
 const SignUp = () => {
     const [formData, setFormData] = useState({
@@ -184,7 +186,7 @@ const SignUp = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-transparent p-4 relative overflow-y-auto py-10">
-            {/* Background Blobs Removed for Plasma */}
+            <GeometricBackground />
 
             <motion.div
                 initial={{ opacity: 0, y: 30 }}
@@ -192,11 +194,18 @@ const SignUp = () => {
                 className="bg-surface/90 backdrop-blur-xl rounded-3xl shadow-2xl border border-white/20 w-full max-w-2xl overflow-hidden relative z-10"
             >
                 {/* Accent Header */}
-                <div className="h-1.5 bg-gradient-to-r from-secondary to-primary w-full" />
+                <div className="h-1.5 bg-gradient-to-r from-secondary via-primary to-secondary w-full animate-gradient-x" />
 
                 <div className="p-6 md:p-10">
                     <div className="text-center mb-8">
-                        <h2 className="text-3xl font-bold font-heading text-text tracking-tight">Create Account</h2>
+                        <GradientText
+                            colors={["#4F46E5", "#E11D48", "#4F46E5"]}
+                            animationSpeed={3}
+                            showBorder={false}
+                            className="text-3xl font-bold font-heading mb-2"
+                        >
+                            Create Account
+                        </GradientText>
                         <p className="text-text-muted mt-2 text-base">Join CarConnect and travel smarter together</p>
                     </div>
 

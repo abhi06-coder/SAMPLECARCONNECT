@@ -1,16 +1,20 @@
 import { useState, useEffect } from 'react';
-import api from '../utils/api';
 import { useAuth } from '../context/AuthContext';
 import { useNavigate } from 'react-router-dom';
+import DepositButton from './DepositButton';
 
 const DriverOnboarding = ({ onSuccess }) => {
-    const { user, updateProfile } = useAuth();
+    const { user, updateProfile, uploadQrCode } = useAuth();
     const navigate = useNavigate();
     const [step, setStep] = useState(1);
     const [vehicleData, setVehicleData] = useState({
         model: '',
         plateNumber: '',
         capacity: 4
+    });
+    const [paymentData, setPaymentData] = useState({
+        upiId: '',
+        qrCodeFile: null
     });
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState('');
@@ -29,14 +33,40 @@ const DriverOnboarding = ({ onSuccess }) => {
         setVehicleData({ ...vehicleData, [e.target.name]: e.target.value });
     };
 
+    const handlePaymentChange = (e) => {
+        if (e.target.name === 'qrCodeFile') {
+            setPaymentData({ ...paymentData, qrCodeFile: e.target.files[0] });
+        } else {
+            setPaymentData({ ...paymentData, [e.target.name]: e.target.value });
+        }
+    };
+
     const submitVehicleDetails = async (e) => {
         e.preventDefault();
         setLoading(true);
         setError('');
 
         try {
+            let qrCodeUrl = '';
+            if (paymentData.qrCodeFile) {
+                const uploadData = new FormData();
+                uploadData.append('qrCode', paymentData.qrCodeFile);
+                const uploadRes = await uploadQrCode(uploadData);
+                if (uploadRes.success) {
+                    qrCodeUrl = uploadRes.url;
+                } else {
+                    setError('Failed to upload QR Code');
+                    setLoading(false);
+                    return;
+                }
+            }
+
             const res = await updateProfile({
-                vehicle: vehicleData
+                vehicle: vehicleData,
+                paymentDetails: {
+                    upiId: paymentData.upiId,
+                    qrCodeUrl: qrCodeUrl
+                }
             });
             if (res.success) {
                 setStep(2);
@@ -50,40 +80,9 @@ const DriverOnboarding = ({ onSuccess }) => {
         }
     };
 
-    const handlePayment = async () => {
-        setLoading(true);
-        setError('');
-        try {
-            // 1. Create Mock Order
-            const { data: orderData } = await api.post('/payment/create-order');
-
-            if (!orderData.success) {
-                throw new Error('Failed to initiate payment');
-            }
-
-            // 2. SIMULATE RAZORPAY WEBHOOK (In real app, Razorpay server calls this)
-            // We trigger the webhook endpoint from client just to demonstrate the flow
-            await api.post('/payment/webhook', {
-                event: 'mock.payment.success',
-                payload: {
-                    payment: {
-                        entity: {
-                            notes: orderData.notes // Contains userId
-                        }
-                    }
-                }
-            });
-
-            // 3. Poll or wait for update 
-            if (onSuccess) onSuccess();
-            window.location.reload();
-
-        } catch (err) {
-            console.error(err);
-            setError('Payment failed. Please try again.');
-        } finally {
-            setLoading(false);
-        }
+    const handlePaymentSuccess = () => {
+        if (onSuccess) onSuccess();
+        window.location.reload();
     };
 
     return (
@@ -137,6 +136,41 @@ const DriverOnboarding = ({ onSuccess }) => {
                             className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
                         />
                     </div>
+
+                    <div className="border-t border-border pt-4 mt-4">
+                        <h3 className="font-bold text-text mb-3">Payment Details (Optional)</h3>
+                        <p className="text-xs text-text-muted mb-4">Provide your UPI ID or QR Code to accept online payments from passengers.</p>
+
+                        <div className="mb-4">
+                            <label className="block text-text font-medium text-sm mb-1">UPI ID</label>
+                            <input
+                                type="text"
+                                name="upiId"
+                                value={paymentData.upiId}
+                                onChange={handlePaymentChange}
+                                placeholder="e.g. username@upi"
+                                className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            />
+                        </div>
+
+                        <div>
+                            <label className="block text-text font-medium text-sm mb-1">QR Code Image</label>
+                            <input
+                                type="file"
+                                name="qrCodeFile"
+                                accept="image/*"
+                                onChange={handlePaymentChange}
+                                className="w-full px-4 py-2 bg-background border border-border rounded-xl focus:ring-2 focus:ring-primary/20 focus:border-primary outline-none transition-all"
+                            />
+                            <p className="text-xs text-text-muted mt-1">Upload a screenshot of your payment QR code.</p>
+                        </div>
+
+                        {(paymentData.qrCodeFile || paymentData.upiId) && (
+                            <div className="bg-blue-50 text-blue-800 text-xs p-2 rounded mt-2">
+                                Online payments will be enabled for your rides.
+                            </div>
+                        )}
+                    </div>
                     <button
                         type="submit"
                         disabled={loading}
@@ -157,13 +191,12 @@ const DriverOnboarding = ({ onSuccess }) => {
                     <p className="text-sm text-text-muted">
                         To ensure trust and accountability, we require a nominal deposit from all drivers.
                     </p>
-                    <button
-                        onClick={handlePayment}
-                        disabled={loading}
+
+                    <DepositButton
+                        onSuccess={handlePaymentSuccess}
                         className="w-full bg-success text-white py-3 rounded-xl font-bold shadow-lg shadow-success/20 hover:bg-success-hover transition-all transform hover:-translate-y-0.5"
-                    >
-                        {loading ? 'Processing...' : 'Pay & Verify'}
-                    </button>
+                    />
+
                     <button
                         onClick={() => setStep(1)}
                         className="text-text-muted text-sm hover:text-text transition-colors"

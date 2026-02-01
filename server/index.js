@@ -31,10 +31,13 @@ app.use(cookieParser());
 
 // Database Connection
 // Database Connection
-connectDB();
+// Database Connection handled below based on environment
 
 import { initScheduler } from './jobs/reminderCron.js';
-initScheduler();
+
+if (process.env.NODE_ENV !== 'test') {
+    initScheduler();
+}
 
 import authRoutes from './routes/authRoutes.js';
 import userRoutes from './routes/userRoutes.js';
@@ -44,6 +47,10 @@ import reviewRoutes from './routes/reviewRoutes.js';
 
 import commuteRoutes from './routes/commuteRoutes.js';
 import paymentRoutes from './routes/paymentRoutes.js';
+import adminRoutes from './routes/adminRoutes.js';
+import feedbackRoutes from './routes/feedbackRoutes.js';
+import reportRoutes from './routes/reportRoutes.js';
+import announcementRoutes from './routes/announcementRoutes.js';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -52,6 +59,10 @@ app.use('/api/bookings', bookingRoutes);
 app.use('/api/commute', commuteRoutes);
 app.use('/api/reviews', reviewRoutes);
 app.use('/api/payment', paymentRoutes);
+app.use('/api/admin', adminRoutes);
+app.use('/api/feedback', feedbackRoutes);
+app.use('/api/reports', reportRoutes);
+app.use('/api/announcements', announcementRoutes);
 
 // Socket.io
 // In-memory store for last known locations
@@ -116,6 +127,13 @@ app.get('/', (req, res) => {
 
 const PORT = process.env.PORT || 5000;
 
-httpServer.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-});
+if (process.env.NODE_ENV !== 'test') {
+    // Database Connection
+    connectDB();
+
+    httpServer.listen(PORT, () => {
+        console.log(`Server running on port ${PORT}`);
+    });
+}
+
+export default app;

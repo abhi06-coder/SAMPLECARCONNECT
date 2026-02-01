@@ -4,8 +4,14 @@ import User from '../models/User.js';
 const protect = async (req, res, next) => {
     let token;
 
-    if (req.cookies.jwt) {
-        token = req.cookies.jwt;
+    token = req.cookies.jwt;
+
+    if (req.headers.authorization && req.headers.authorization.startsWith('Bearer')) {
+        try {
+            token = req.headers.authorization.split(' ')[1];
+        } catch (error) {
+            console.error('Bearer Token Extract Error:', error);
+        }
     }
 
     if (token) {
@@ -24,4 +30,12 @@ const protect = async (req, res, next) => {
     }
 };
 
-export { protect };
+const admin = (req, res, next) => {
+    if (req.user && req.user.role === 'admin') {
+        next();
+    } else {
+        res.status(401).json({ message: 'Not authorized as an admin' });
+    }
+};
+
+export { protect, admin };

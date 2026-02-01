@@ -7,7 +7,7 @@ const PlasmaBackground = () => {
 
     // Define routes where Background should be visible
     // Only Landing (/), Login (/login), and SignUp (/signup)
-    const allowedRoutes = ['/', '/login', '/signup'];
+    const allowedRoutes = ['/'];
 
     const showEffect = allowedRoutes.includes(location.pathname);
 

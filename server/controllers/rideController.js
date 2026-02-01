@@ -30,11 +30,11 @@ const createRide = async (req, res) => {
     try {
         console.log("Received Ride Data:", JSON.stringify(req.body, null, 2));
 
-        // Check if user has paid the security deposit
-        if (!req.user.depositPaid) {
+        // Check if user has sufficient wallet balance (₹100 minimum)
+        if (req.user.walletBalance < 100) {
             return res.status(403).json({
                 success: false,
-                message: 'Security deposit required to offer rides. Please pay the deposit in your profile.'
+                message: 'Minimum wallet balance of ₹100 required to offer rides. Please top up your wallet in your profile.'
             });
         }
 
@@ -304,7 +304,7 @@ const searchRides = async (req, res) => {
 
 
 
-        let rides = await Ride.find(query).populate('driver', 'name profilePicture isVerified vehicle gender age travelPreferences bio avgRating');
+        let rides = await Ride.find(query).populate('driver', 'name profilePicture isVerified vehicle gender age travelPreferences bio avgRating paymentDetails');
 
         // Post-Processing: Meeting Points & Virtual Grid Availability
         if (sourceLat && sourceLng && destLat && destLng) {
@@ -517,4 +517,73 @@ const getRideById = async (req, res) => {
     }
 };
 
-export { createRide, getDriverRides, updateRideStatus, updateRide, deleteRide, searchRides, joinWaitlist, getRideById };
+// @desc    Cancel ride with time-based penalty
+// @route   DELETE /api/rides/:id/cancel
+// @access  Private (Driver only)
+const cancelRide = async (req, res) => {
+    try {
+        const ride = await Ride.findById(req.params.id);
+
+        if (!ride) {
+            return res.status(404).json({ message: 'Ride not found' });
+        }
+
+        // Verify ownership
+        if (ride.driver.toString() !== req.user._id.toString()) {
+            return res.status(401).json({ message: 'Not authorized to cancel this ride' });
+        }
+
+        // Calculate time difference
+        const now = new Date();
+        const rideStartTime = new Date(ride.dateTime);
+        const timeDifferenceMinutes = (rideStartTime - now) / (1000 * 60); // Convert ms to minutes
+
+        console.log(`⏰ Ride starts in ${timeDifferenceMinutes.toFixed(0)} minutes`);
+
+        // Apply penalty if canceling within 20 minutes of start time
+        if (timeDifferenceMinutes <= 20 && timeDifferenceMinutes > 0) {
+            const user = await User.findById(req.user._id);
+
+            if (user.walletBalance > 0) {
+                const previousBalance = user.walletBalance;
+                user.walletBalance = 0;
+                user.isDriver = false; // Revoke driver status
+                await user.save();
+
+                console.log(`⚠️ Late cancellation penalty applied to user ${user._id}. Balance ${previousBalance} → 0`);
+
+                // Delete the ride
+                await ride.deleteOne();
+
+                return res.json({
+                    success: true,
+                    message: `Ride cancelled. Late cancellation penalty applied: ₹${previousBalance} deducted from wallet.`,
+                    penaltyApplied: true,
+                    penaltyAmount: previousBalance,
+                    warning: 'You cancelled within 20 minutes of ride start time. Your wallet balance has been forfeited as penalty.'
+                });
+            }
+        }
+
+        // No penalty - normal cancellation
+        await ride.deleteOne();
+
+        // Auto-demote to user if no active rides left
+        const activeRides = await Ride.countDocuments({ driver: req.user._id, status: 'active' });
+        if (activeRides === 0) {
+            await User.findByIdAndUpdate(req.user._id, { role: 'user' });
+        }
+
+        res.json({
+            success: true,
+            message: `Ride cancelled successfully. ${timeDifferenceMinutes > 20 ? 'No penalty applied.' : ''}`,
+            penaltyApplied: false
+        });
+
+    } catch (error) {
+        console.error('Cancel Ride Error:', error);
+        res.status(500).json({ message: 'Server Error', error: error.message });
+    }
+};
+
+export { createRide, getDriverRides, updateRideStatus, updateRide, deleteRide, searchRides, joinWaitlist, getRideById, cancelRide };

@@ -24,6 +24,8 @@ const getUserProfile = async (req, res) => {
         isDriver: req.user.isDriver,
         depositPaid: req.user.depositPaid,
         vehicle: req.user.vehicle,
+        vehicle: req.user.vehicle,
+        paymentDetails: req.user.paymentDetails,
     };
     res.status(200).json(user);
 };
@@ -87,6 +89,14 @@ const updateUserProfile = async (req, res) => {
                 }
             }
 
+            // Handle Payment Details Update
+            if (req.body.paymentDetails) {
+                user.paymentDetails = {
+                    ...user.paymentDetails,
+                    ...req.body.paymentDetails
+                };
+            }
+
             if (req.body.password) {
                 user.password = req.body.password;
             }
@@ -135,6 +145,9 @@ const updateUserProfile = async (req, res) => {
                 isDriver: updatedUser.isDriver,
                 depositPaid: updatedUser.depositPaid,
                 vehicle: updatedUser.vehicle,
+                depositPaid: updatedUser.depositPaid,
+                vehicle: updatedUser.vehicle,
+                paymentDetails: updatedUser.paymentDetails,
             });
         } else {
             res.status(404).json({ message: 'User not found' });
@@ -157,6 +170,17 @@ const uploadProfilePhoto = (req, res) => {
         res.status(200).json({ url: req.file.path });
     } else {
         res.status(400).json({ message: 'Image upload failed' });
+    }
+};
+
+// @desc    Upload QR Code
+// @route   POST /api/users/profile/upload-qr
+// @access  Private
+const uploadQrCode = (req, res) => {
+    if (req.file && req.file.path) {
+        res.status(200).json({ url: req.file.path });
+    } else {
+        res.status(400).json({ message: 'QR Code upload failed' });
     }
 };
 
@@ -234,4 +258,4 @@ const toggleDeposit = async (req, res) => {
     }
 };
 
-export { getUserProfile, updateUserProfile, uploadProfilePhoto, getPublicProfile, toggleDeposit };
+export { getUserProfile, updateUserProfile, uploadProfilePhoto, uploadQrCode, getPublicProfile, toggleDeposit };

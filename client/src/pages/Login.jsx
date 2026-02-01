@@ -6,6 +6,8 @@ import { signInWithPopup } from 'firebase/auth';
 import { motion, AnimatePresence } from 'framer-motion';
 import Input from '../components/ui/Input';
 import Button from '../components/ui/Button';
+import GeometricBackground from '../components/GeometricBackground';
+import GradientText from '../components/GradientText';
 
 const Login = () => {
     const [email, setEmail] = useState('');
@@ -62,7 +64,7 @@ const Login = () => {
 
     return (
         <div className="min-h-screen flex items-center justify-center bg-transparent p-4 relative overflow-hidden">
-            {/* Background Blobs Removed for Plasma */}
+            <GeometricBackground />
 
             <motion.div
                 initial={{ opacity: 0, y: 20 }}
@@ -70,7 +72,7 @@ const Login = () => {
                 className="bg-surface/80 backdrop-blur-xl p-0 rounded-3xl shadow-2xl border border-white/20 w-full max-w-md overflow-hidden relative z-10"
             >
                 {/* Accent Header */}
-                <div className="h-1.5 bg-gradient-to-r from-primary to-secondary w-full" />
+                <div className="h-1.5 bg-gradient-to-r from-primary via-secondary to-primary w-full animate-gradient-x" />
 
                 <div className="p-8 md:p-10">
                     <div className="text-center mb-8">
@@ -81,7 +83,14 @@ const Login = () => {
                         >
                             <span className="text-3xl">👋</span>
                         </motion.div>
-                        <h2 className="text-3xl font-bold font-heading text-text tracking-tight">Welcome Back</h2>
+                        <GradientText
+                            colors={["#4F46E5", "#E11D48", "#4F46E5"]}
+                            animationSpeed={3}
+                            showBorder={false}
+                            className="text-3xl font-bold font-heading mb-2"
+                        >
+                            Welcome Back
+                        </GradientText>
                         <p className="text-text-muted mt-2 text-base">Sign in to continue your journey</p>
                     </div>
 

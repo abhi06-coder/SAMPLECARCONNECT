@@ -118,8 +118,21 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    const uploadQrCode = async (formData) => {
+        try {
+            const { data } = await api.post('/users/profile/upload-qr', formData, {
+                headers: {
+                    'Content-Type': 'multipart/form-data',
+                },
+            });
+            return { success: true, url: data.url };
+        } catch (error) {
+            return { success: false, message: error.response?.data?.message || 'Upload failed' };
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ user, login, register, logout, updateProfile, loginWithGoogle, uploadProfilePicture, loading }}>
+        <AuthContext.Provider value={{ user, login, register, logout, updateProfile, loginWithGoogle, uploadProfilePicture, uploadQrCode, loading }}>
             {children}
         </AuthContext.Provider>
     );

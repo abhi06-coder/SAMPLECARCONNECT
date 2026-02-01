@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Button from '../components/ui/Button';
+import GradientText from '../components/GradientText';
 
 const Home = () => {
     const features = [
@@ -75,11 +76,24 @@ const Home = () => {
                             transition={{ duration: 0.8 }}
                             className="max-w-4xl space-y-6 lg:space-y-8"
                         >
+
                             <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold font-heading tracking-tight text-text leading-tight mt-4 lg:mt-0">
-                                Travel Together, <br />
-                                <span className="bg-gradient-to-r from-primary to-secondary bg-clip-text text-transparent">
+                                <GradientText
+                                    colors={["#0f172a", "#334155", "#0f172a"]} // Dark colors for "Travel Together" part to look like normal text but with subtle gradient
+                                    animationSpeed={8}
+                                    showBorder={false}
+                                    className="block"
+                                >
+                                    Travel Together,
+                                </GradientText>
+                                <GradientText
+                                    colors={["#5227FF", "#941490", "#B19EEF"]} // User provided colors
+                                    animationSpeed={8}
+                                    showBorder={false}
+                                    className="block"
+                                >
                                     Save Together.
-                                </span>
+                                </GradientText>
                             </h1>
                             <p className="text-lg md:text-xl text-text-muted leading-relaxed max-w-2xl mx-auto">
                                 Join India's most trusted carpooling community. Share rides, split costs, and make travel eco-friendly and fun.

@@ -30,6 +30,17 @@ import TermsAndConditions from './pages/policies/TermsAndConditions';
 import RefundPolicy from './pages/policies/RefundPolicy';
 import ShippingPolicy from './pages/policies/ShippingPolicy';
 
+import AdminRoute from './components/routes/AdminRoute';
+import AdminLayout from './components/admin/AdminLayout';
+import AdminDashboard from './pages/admin/AdminDashboard';
+import UserManagement from './pages/admin/UserManagement';
+import AnalyticsDashboard from './pages/admin/AnalyticsDashboard';
+import RefundRequests from './pages/admin/RefundRequests';
+import FeedbackInbox from './pages/admin/FeedbackInbox';
+import UserReports from './pages/admin/UserReports';
+import Announcements from './pages/admin/Announcements';
+import AuditLogs from './pages/admin/AuditLogs';
+
 import { ThemeProvider } from './context/ThemeContext';
 
 function App() {
@@ -66,6 +77,22 @@ function App() {
               <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
               <Route path="/refund-policy" element={<RefundPolicy />} />
               <Route path="/shipping-policy" element={<ShippingPolicy />} />
+              <Route path="/shipping-policy" element={<ShippingPolicy />} />
+
+              {/* Admin Routes */}
+              <Route element={<AdminRoute />}>
+                <Route element={<AdminLayout />}>
+                  <Route path="/admin/dashboard" element={<AdminDashboard />} />
+                  <Route path="/admin/users" element={<UserManagement />} />
+                  <Route path="/admin/analytics" element={<AnalyticsDashboard />} />
+                  <Route path="/admin/refunds" element={<RefundRequests />} />
+                  <Route path="/admin/feedback" element={<FeedbackInbox />} />
+                  <Route path="/admin/reports" element={<UserReports />} />
+                  <Route path="/admin/announcements" element={<Announcements />} />
+                  <Route path="/admin/audit-logs" element={<AuditLogs />} />
+                </Route>
+              </Route>
+
             </Routes>
             <Footer />
             <BottomNav />
