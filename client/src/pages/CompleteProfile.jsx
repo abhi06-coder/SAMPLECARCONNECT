@@ -14,6 +14,9 @@ const CompleteProfile = () => {
         phone: '',
         age: '',
         gender: 'Male',
+        emergencyContactName: '',
+        emergencyContactPhone: '',
+        travelPreferences: []
     });
     const [error, setError] = useState('');
     const [step, setStep] = useState('details'); // 'details' | 'otp' | 'otp-failed'
@@ -53,7 +56,14 @@ const CompleteProfile = () => {
 
         // If phone is empty, save directly
         if (!formData.phone) {
-            const result = await updateProfile({ ...user, ...formData });
+            const payload = {
+                ...formData,
+                emergencyContact: {
+                    name: formData.emergencyContactName,
+                    phone: formData.emergencyContactPhone
+                }
+            };
+            const result = await updateProfile({ ...user, ...payload });
             if (result.success) {
                 navigate('/profile');
             } else {
@@ -88,7 +98,14 @@ const CompleteProfile = () => {
 
     const handleSaveSkippingVerification = async () => {
         setLoading(true);
-        const result = await updateProfile({ ...user, ...formData });
+        const payload = {
+            ...formData,
+            emergencyContact: {
+                name: formData.emergencyContactName,
+                phone: formData.emergencyContactPhone
+            }
+        };
+        const result = await updateProfile({ ...user, ...payload });
         if (result.success) {
             navigate('/profile');
         } else {
@@ -107,7 +124,16 @@ const CompleteProfile = () => {
             const userResult = result.user;
             const idToken = await userResult.getIdToken();
 
-            const updateResult = await updateProfile({ ...user, ...formData, phoneVerificationToken: idToken });
+            const payload = {
+                ...formData,
+                emergencyContact: {
+                    name: formData.emergencyContactName,
+                    phone: formData.emergencyContactPhone
+                },
+                phoneVerificationToken: idToken
+            };
+
+            const updateResult = await updateProfile({ ...user, ...payload });
 
             if (updateResult.success) {
                 navigate('/profile');
@@ -178,6 +204,55 @@ const CompleteProfile = () => {
                                 <div className="absolute right-4 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">
                                     <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" /></svg>
                                 </div>
+                            </div>
+                        </div>
+
+                        {/* Emergency Contact Section */}
+                        <div className="space-y-4 pt-2 border-t border-dashed border-border">
+                            <h3 className="text-sm font-bold text-primary uppercase tracking-wider">Emergency Contact</h3>
+                            <Input
+                                label="Contact Name (Required)"
+                                name="emergencyContactName"
+                                value={formData.emergencyContactName}
+                                onChange={handleChange}
+                                placeholder="Parent/Spouse Name"
+                                required
+                                fullWidth
+                            />
+                            <Input
+                                label="Contact Phone (Required)"
+                                name="emergencyContactPhone"
+                                value={formData.emergencyContactPhone}
+                                onChange={handleChange}
+                                placeholder="+91..."
+                                required
+                                fullWidth
+                            />
+                        </div>
+
+                        {/* Travel Preferences Section */}
+                        <div className="space-y-2 pt-2 border-t border-dashed border-border">
+                            <label className="block text-sm font-bold text-primary uppercase tracking-wider mb-2">Travel Preferences</label>
+                            <div className="flex flex-wrap gap-2">
+                                {['No Smoking', 'Women Only', 'Music Friendly', 'Quiet Ride', 'Pet Friendly'].map(pref => (
+                                    <button
+                                        key={pref}
+                                        type="button"
+                                        onClick={() => {
+                                            const currentPrefs = formData.travelPreferences || [];
+                                            const newPrefs = currentPrefs.includes(pref)
+                                                ? currentPrefs.filter(p => p !== pref)
+                                                : [...currentPrefs, pref];
+                                            setFormData({ ...formData, travelPreferences: newPrefs });
+                                        }}
+                                        className={`px-3 py-1.5 rounded-full text-xs font-bold transition-all border ${formData.travelPreferences.includes(pref)
+                                            ? 'bg-primary text-white border-primary shadow-sm'
+                                            : 'bg-transparent text-text-muted border-border hover:border-primary hover:text-primary'
+                                            }`}
+                                    >
+                                        {pref}
+                                    </button>
+                                ))}
                             </div>
                         </div>
 

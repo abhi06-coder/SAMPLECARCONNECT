@@ -135,16 +135,20 @@ const Home = () => {
             </section>
 
             {/* Feature Cards */}
-            <section id="features" className="py-20 bg-surface/10 backdrop-blur-md relative z-10 -mt-10 lg:-mt-32 mx-4 rounded-3xl border border-white/10">
+            <section id="features" className="py-20 bg-surface/10 backdrop-blur-md relative z-10 mt-8 mx-4 rounded-3xl border border-white/10">
                 <div className="container-custom">
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
                         {features.map((feature, idx) => (
                             <motion.div
                                 key={idx}
-                                initial={{ opacity: 0, y: 20 }}
-                                whileInView={{ opacity: 1, y: 0 }}
-                                viewport={{ once: true }}
-                                transition={{ delay: idx * 0.1 }}
+                                initial={{ opacity: 0, y: -40 }} // Start slightly above
+                                whileInView={{ opacity: 1, y: 0 }} // Animate to original position
+                                viewport={{ once: true, margin: "-50px" }} // Trigger slightly before full view
+                                transition={{
+                                    duration: 0.6,
+                                    ease: [0.22, 1, 0.36, 1], // Custom cubic-bezier
+                                    delay: idx * 0.1 // Stagger effect
+                                }}
                                 className="bg-surface/40 p-6 lg:p-8 rounded-2xl shadow-xl border border-white/10 hover:bg-surface/60 hover:shadow-2xl hover:border-primary/30 transition-all duration-300 group backdrop-blur-sm"
                             >
                                 <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-2xl bg-gradient-to-br from-neutral to-surface-elevated flex items-center justify-center mb-6 shadow-inner group-hover:scale-110 transition-transform duration-300">

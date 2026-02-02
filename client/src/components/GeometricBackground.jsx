@@ -3,13 +3,13 @@ import { motion } from 'framer-motion';
 
 const GeometricBackground = () => {
     return (
-        <div className="fixed inset-0 w-full h-full bg-[#0f172a] -z-10 overflow-hidden pointer-events-none">
+        <div className="fixed inset-0 w-full h-full bg-background transition-colors duration-300 -z-10 overflow-hidden pointer-events-none">
             {/* Grid Pattern */}
             <div
                 className="absolute inset-0 opacity-[0.4]"
                 style={{
-                    backgroundImage: `linear-gradient(to right, #1e293b 1px, transparent 1px), 
-                            linear-gradient(to bottom, #1e293b 1px, transparent 1px)`,
+                    backgroundImage: `linear-gradient(to right, rgb(var(--color-border) / 0.3) 1px, transparent 1px), 
+                            linear-gradient(to bottom, rgb(var(--color-border) / 0.3) 1px, transparent 1px)`,
                     backgroundSize: '4rem 4rem',
                     maskImage: 'radial-gradient(ellipse 60% 50% at 50% 0%, #000 70%, transparent 100%)'
                 }}
