@@ -1,0 +1,61 @@
+graph TD
+    %% -- STYLES (White Background, Black Text) --
+    classDef entity fill:#ffffff,stroke:#000000,stroke-width:2px,color:black,shape:rect;
+    classDef process fill:#ffffff,stroke:#000000,stroke-width:2px,color:black,shape:circle;
+    classDef store fill:#ffffff,stroke:#000000,stroke-width:2px,color:black,shape:cylinder;
+
+    %% -- NODES --
+    
+    %% Entities (Rectangles)
+    Pass[Passenger]:::entity
+    Driv[Driver]:::entity
+    Adm[Admin]:::entity
+    RP[Razorpay Gateway]:::entity
+    FA[Firebase Auth]:::entity
+
+    %% Processes (Circles)
+    P1((1.0 Auth)):::process
+    P2((2.0 Ride Mgmt)):::process
+    P3((3.0 Booking)):::process
+    P4((4.0 Payment)):::process
+    P5((5.0 Admin Ops)):::process
+
+    %% Data Stores (Cylinders - Standard code representation of Data Store)
+    DS1[(User DB)]:::store
+    DS2[(Ride DB)]:::store
+    DS3[(Booking DB)]:::store
+
+    %% -- FLOWS --
+
+    %% 1. Auth Flow
+    Pass -- Login --> P1
+    Driv -- Login --> P1
+    P1 -- Verify --> FA
+    FA -- Token --> P1
+    P1 -- Save/Get --> DS1
+    DS1 -.-> P1
+
+    %% 2. Ride Management
+    Driv -- Offer Ride --> P2
+    P2 -- Save --> DS2
+    DS2 -.-> P2
+
+    %% 3. Booking Process
+    Pass -- Search --> P3
+    P3 -- Query --> DS2
+    DS2 -.-> P3
+    Pass -- Request --> P3
+    P3 -- Notify --> Driv
+    Driv -- Accept --> P3
+    P3 -- Create --> DS3
+
+    %% 4. Payment
+    Pass -- Pay --> P4
+    P4 -- Order --> RP
+    RP -- Status --> P4
+    P4 -- Update --> DS3
+
+    %% 5. Admin
+    Adm -- Block/Refund --> P5
+    P5 -- Update --> DS1
+    P5 -- Modify --> DS3

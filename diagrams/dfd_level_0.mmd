@@ -1,0 +1,30 @@
+graph LR
+    %% Styles
+    classDef entity fill:#ffffff,stroke:#000000,stroke-width:2px,color:black;
+    classDef system fill:#ffffff,stroke:#000000,stroke-width:2px,color:black;
+
+    %% Entities
+    Pass[Passenger]:::entity
+    Driv[Driver]:::entity
+    Adm[Admin]:::entity
+
+    %% System Process
+    Sys((CarConnect<br/>System)):::system
+
+    %% Layout: Passenger - System - Admin/Driver
+    
+    %% Flows: Passenger <-> System
+    Pass -- Bookings / Payments --> Sys
+    Sys -- Tickets / Receipts --> Pass
+
+    %% Flows: Driver <-> System
+    Sys -- Ride Requests --> Driv
+    Driv -- Accept / Reject --> Sys
+
+    %% Flows: Admin <-> System
+    Adm -- User Mgmt / Refunds --> Sys
+    Sys -- Reports / Stats --> Adm
+
+    %% Positioning Hint (Mermaid constraint)
+    Pass ~~~ Sys ~~~ Driv
+    Sys ~~~ Adm

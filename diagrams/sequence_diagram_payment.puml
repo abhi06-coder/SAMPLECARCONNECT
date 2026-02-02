@@ -1,0 +1,55 @@
+@startuml
+title Sequence Diagram: Payment Process (Razorpay)
+autonumber
+
+actor "Passenger" as P
+participant "WebApp (Frontend)" as FE
+participant "CarConnect API (Backend)" as BE
+participant "Razorpay API" as RP
+database "Database" as DB
+
+P -> FE: Clicks "Pay Now"
+activate FE
+
+FE -> BE: createPaymentOrder()\nPOST /api/payment/create-order
+activate BE
+
+BE -> RP: createOrder(amount, currency)
+activate RP
+RP --> BE: Returns order_id
+deactivate RP
+
+BE --> FE: Returns order_id & key
+deactivate BE
+
+FE -> P: Opens Razorpay Checkout
+deactivate FE
+
+P -> RP: Enters Payment Details & Pays
+activate RP
+RP --> FE: Returns payment_id, order_id, signature
+deactivate RP
+
+activate FE
+FE -> BE: verifyPayment()\nPOST /api/payment/verify
+activate BE
+
+BE -> BE: Verifies Signature (HMAC SHA256)
+
+alt Signature Valid
+    BE -> DB: Update Booking (Payment Status: Paid)
+    activate DB
+    DB --> BE: Success
+    deactivate DB
+    
+    BE --> FE: Payment Verified & Success
+    FE -> P: Display "Payment Successful"
+else Signature Invalid
+    BE --> FE: Payment Verification Failed
+    FE -> P: Display "Payment Failed"
+end
+
+deactivate BE
+deactivate FE
+
+@enduml

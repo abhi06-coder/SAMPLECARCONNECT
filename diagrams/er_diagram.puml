@@ -1,0 +1,73 @@
+@startuml
+title ER Diagram: CarConnect Database
+
+entity "User" {
+  * _id : ObjectId <<Primary Key>>
+  --
+  * name : String
+  * email : String
+  * role : String (user/driver/admin)
+  * walletBalance : Number
+  * vehicle : Object {model, plate, capacity}
+  isVerified : Boolean
+}
+
+entity "Ride" {
+  * _id : ObjectId <<Primary Key>>
+  --
+  * driver : ObjectId <<Foreign Key>>
+  * source : Object {name, lat, lng}
+  * destination : Object {name, lat, lng}
+  * dateTime : Date
+  * price : Number
+  * totalSeats : Number
+  * availableSeats : Number
+  * status : String
+  routePath : GeoJSON
+}
+
+entity "Booking" {
+  * _id : ObjectId <<Primary Key>>
+  --
+  * ride : ObjectId <<Foreign Key>>
+  * passenger : ObjectId <<Foreign Key>>
+  * seatsBooked : Number
+  * totalPrice : Number
+  * status : String (pending/confirmed)
+  * paymentStatus : String
+  * paymentMode : String
+}
+
+entity "Review" as Rating {
+  * _id : ObjectId <<Primary Key>>
+  --
+  * ride : ObjectId <<Foreign Key>>
+  * reviewer : ObjectId <<Foreign Key>>
+  * reviewee : ObjectId <<Foreign Key>>
+  * rating : Number (1-5)
+  * comment : String
+}
+
+entity "Payment" {
+  * _id : ObjectId <<Primary Key>>
+  --
+  * user : ObjectId <<Foreign Key>>
+  * amount : Number
+  * razorpayOrderId : String
+  * status : String
+  * timestamp : Date
+}
+
+' Relationships
+
+User ||--o{ Ride : "Offers"
+User ||--o{ Booking : "Books"
+Ride ||--o{ Booking : "Contains"
+
+User ||--o{ Rating : "Writes"
+User ||--o{ Rating : "Receives"
+Ride ||--o{ Rating : "Is Reviewed"
+
+User ||--o{ Payment : "Makes"
+
+@enduml

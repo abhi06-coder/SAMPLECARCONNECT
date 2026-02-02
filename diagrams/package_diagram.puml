@@ -1,0 +1,74 @@
+@startuml
+title Package Diagram: CarConnect System
+left to right direction
+skinparam packageStyle rectangle
+skinparam linetype ortho
+skinparam nodesep 50
+skinparam ranksep 50
+
+package "Client (Frontend)" {
+    package "Pages" {
+       [Home]
+       [Login/Signup]
+       [Dashboard]
+       [Search Rides]
+       [Profile]
+    }
+
+    package "Components" {
+       [Navbar]
+       [RideCard]
+       [Forms]
+    }
+
+    package "Context" {
+       [AuthContext]
+       [SocketContext]
+    }
+
+    package "Services/Utils" as ClientUtils {
+       [API Client]
+    }
+
+    Pages ..> Components : Uses
+    Pages ..> Context : Consumes
+    Components ..> ClientUtils : Uses
+}
+
+package "Server (Backend)" {
+    package "Routes" {
+       [AuthRoutes]
+       [RideRoutes]
+       [BookingRoutes]
+    }
+
+    package "Controllers" {
+       [AuthController]
+       [RideController]
+       [BookingController]
+    }
+
+    package "Models" {
+       [User]
+       [Ride]
+       [Booking]
+    }
+
+    package "Middleware" {
+       [AuthMiddleware]
+    }
+
+    package "Config" {
+       [DB Connection]
+    }
+    
+    Routes ..> Controllers : Maps to
+    Routes ..> Middleware : Uses
+    Controllers ..> Models : Manipulates
+    Models ..> Config : Uses
+}
+
+' Cross-border communication
+ClientUtils ..> Routes : HTTP Requets
+
+@enduml

@@ -17,7 +17,7 @@ const SearchRides = () => {
     const [searchParams, setSearchParams] = useState({
         source: '',
         destination: '',
-        date: '',
+        date: new Date().toISOString().split('T')[0],
         sourceLat: null,
         sourceLng: null,
         destLat: null,
@@ -256,15 +256,19 @@ const SearchRides = () => {
             <AnimatePresence>
                 {showStickyHeader && searchParams.source && (
                     <motion.div
-                        initial={{ y: -100, opacity: 0 }}
-                        animate={{ y: 0, opacity: 1 }}
-                        exit={{ y: -100, opacity: 0 }}
-                        className="fixed top-16 left-0 right-0 z-40 bg-surface/90 backdrop-blur-md border-b border-border shadow-md px-4 py-3 flex items-center justify-between lg:justify-center lg:gap-8"
+                        initial={{ y: -100, opacity: 0, scale: 0.98 }}
+                        animate={{ y: 0, opacity: 1, scale: 1 }}
+                        exit={{ y: -100, opacity: 0, scale: 0.98 }}
+                        transition={{ duration: 0.4, ease: "circOut" }}
+                        className="fixed top-16 left-0 right-0 z-40 bg-surface/80 backdrop-blur-lg border-b border-border shadow-md px-4 py-3 flex items-center justify-between lg:justify-center lg:gap-8"
                     >
-                        <div className="flex items-center gap-2 text-sm font-medium text-text truncate max-w-[70%]">
-                            <span className="truncate">{searchParams.source.split(',')[0]}</span>
-                            <span className="text-text-muted">→</span>
-                            <span className="truncate">{searchParams.destination.split(',')[0]}</span>
+                        <div className="flex flex-col items-start lg:items-center">
+                            <div className="text-xs font-bold text-primary uppercase tracking-wide mb-0.5">Searching rides</div>
+                            <div className="flex items-center gap-2 text-sm font-medium text-text truncate max-w-[70vw] lg:max-w-none">
+                                <span className="truncate">{searchParams.source.split(',')[0]}</span>
+                                <span className="text-text-muted">→</span>
+                                <span className="truncate">{searchParams.destination.split(',')[0]}</span>
+                            </div>
                         </div>
                         <Button
                             variant="primary"
@@ -409,6 +413,14 @@ const SearchRides = () => {
                                     Send Request
                                 </Button>
                             </div>
+
+                            <div className="mt-4 text-center">
+                                <p className="text-xs text-text-muted flex items-center justify-center gap-1">
+                                    <svg className="w-3 h-3 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                    No payment detected until driver accepts
+                                </p>
+                                <p className="text-[10px] text-text-muted mt-0.5">Cancel anytime before confirmation.</p>
+                            </div>
                         </motion.div>
                     </motion.div>
                 )}
@@ -438,7 +450,7 @@ const SearchRides = () => {
                     className="bg-surface rounded-2xl shadow-xl border border-border/50 p-6 md:p-8 backdrop-blur-sm"
                 >
                     <form onSubmit={handleSearch} className="grid grid-cols-1 md:grid-cols-12 gap-6 items-end">
-                        <div className="md:col-span-4 group">
+                        <div className="md:col-span-6 group">
                             <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 ml-1 group-focus-within:text-primary transition-colors">From</label>
                             <div className="relative z-20">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -451,7 +463,7 @@ const SearchRides = () => {
                                 />
                             </div>
                         </div>
-                        <div className="md:col-span-4 group">
+                        <div className="md:col-span-6 group">
                             <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 ml-1 group-focus-within:text-primary transition-colors">To</label>
                             <div className="relative z-10">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -464,45 +476,56 @@ const SearchRides = () => {
                                 />
                             </div>
                         </div>
-                        <div className="md:col-span-2 group">
-                            <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 ml-1 group-focus-within:text-primary transition-colors">Date</label>
-                            <input
-                                type="date"
-                                name="date"
-                                value={searchParams.date}
-                                onChange={handleChange}
-                                className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-text font-medium dark:[color-scheme:dark]"
-                            />
-                        </div>
-                        <div className="md:col-span-2 group">
-                            <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 ml-1">Passengers</label>
-                            <div className="relative">
-                                <input
-                                    type="number"
-                                    name="passengers"
-                                    min="1"
-                                    max="6"
-                                    value={searchParams.passengers}
-                                    onChange={handleChange}
-                                    className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-text font-medium text-center"
-                                />
-                                <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-text-muted text-sm font-medium">
+                        <AnimatePresence>
+                            {(searchParams.source && searchParams.destination) && (
+                                <motion.div
+                                    initial={{ opacity: 0, height: 0, y: 20 }}
+                                    animate={{ opacity: 1, height: 'auto', y: 0 }}
+                                    exit={{ opacity: 0, height: 0, y: 20 }}
+                                    className="md:col-span-12 grid grid-cols-1 md:grid-cols-12 gap-6 items-end"
+                                >
+                                    <div className="md:col-span-5 group">
+                                        <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 ml-1 group-focus-within:text-primary transition-colors">Date</label>
+                                        <input
+                                            type="date"
+                                            name="date"
+                                            value={searchParams.date}
+                                            onChange={handleChange}
+                                            className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-text font-medium dark:[color-scheme:dark]"
+                                        />
+                                    </div>
+                                    <div className="md:col-span-4 group">
+                                        <label className="block text-xs font-bold text-text-muted uppercase tracking-wider mb-1.5 ml-1">Passengers</label>
+                                        <div className="relative">
+                                            <input
+                                                type="number"
+                                                name="passengers"
+                                                min="1"
+                                                max="6"
+                                                value={searchParams.passengers}
+                                                onChange={handleChange}
+                                                className="w-full px-4 py-3 bg-background border border-border rounded-xl focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all text-text font-medium text-center"
+                                            />
+                                            <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none text-text-muted text-sm font-medium">
+                                                👤
+                                            </div>
+                                        </div>
+                                    </div>
 
-                                </div>
-                            </div>
-                        </div>
-
-                        <div className="md:col-span-12 mt-2 flex justify-end">
-                            <Button
-                                type="submit"
-                                isLoading={loading}
-                                size="lg"
-                                className="w-full md:w-auto px-8"
-                                rightIcon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>}
-                            >
-                                Search Rides
-                            </Button>
-                        </div>
+                                    <div className="md:col-span-3">
+                                        <Button
+                                            type="submit"
+                                            isLoading={loading}
+                                            size="lg"
+                                            className="w-full shadow-[0_0_20px_rgba(79,70,229,0.3)] hover:shadow-[0_0_25px_rgba(79,70,229,0.5)] transition-shadow duration-300"
+                                            rightIcon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>}
+                                        >
+                                            Search Rides
+                                        </Button>
+                                    </div>
+                                </motion.div>
+                            )}
+                        </AnimatePresence>
                     </form>
                 </motion.div>
             </div>
@@ -560,170 +583,111 @@ const SearchRides = () => {
                                 sortedRides.map(ride => (
                                     <Card
                                         key={ride._id}
-                                        className="overflow-hidden hover:shadow-xl hover:scale-[1.01] transition-all duration-300 group border-l-4 border-l-primary cursor-pointer relative"
+                                        className="overflow-hidden hover:shadow-xl hover:scale-[1.005] transition-all duration-300 group cursor-pointer relative border border-border/50"
                                         noPadding
                                     >
-                                        <div className="grid grid-cols-1 lg:grid-cols-12 gap-0 lg:gap-6 p-5">
-
-                                            {/* Mobile: Top Row */}
-                                            <div className="lg:hidden flex justify-between items-start mb-4 border-b border-border/50 pb-3">
+                                        <div className="p-5">
+                                            {/* Header: Time & Price Anchor */}
+                                            <div className="flex justify-between items-start mb-4">
                                                 <div>
-                                                    <div className="text-lg font-bold text-text">
-                                                        {new Date(ride.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                    <div className="flex items-baseline gap-2">
+                                                        <h3 className="text-2xl font-bold text-text">
+                                                            {new Date(ride.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                                        </h3>
+                                                        <span className="text-text-muted font-medium text-sm">
+                                                            • {ride.distanceToMeetingPoint ? `${ride.distanceToMeetingPoint.toFixed(1)} km away` : 'Nearby'}
+                                                        </span>
                                                     </div>
-                                                    <div className="mt-1">
-                                                        <Badge variant={ride.availableSeats <= 1 ? "error" : "success"} size="sm">
-                                                            {ride.availableSeats} seats left
-                                                        </Badge>
+                                                    {/* Trust Signal: Driver */}
+                                                    <div className="flex items-center gap-2 mt-1">
+                                                        <img
+                                                            src={ride.driver?.profilePicture || "https://via.placeholder.com/32"}
+                                                            alt={ride.driver?.name}
+                                                            className="w-6 h-6 rounded-full object-cover"
+                                                        />
+                                                        <span className="text-sm font-semibold text-text">{ride.driver?.name}</span>
+                                                        <span className="text-xs text-text-muted flex items-center">
+                                                            <span className="text-warning mr-1">★ {ride.driver?.avgRating?.toFixed(1) || 'New'}</span>
+                                                            <span>• 12 successful trips</span>
+                                                        </span>
+                                                        {ride.driver?.avgRating >= 4.5 && (
+                                                            <Badge variant="success" size="sm" className="hidden sm:inline-flex ml-2 py-0 px-2 h-5 text-[10px]">
+                                                                TRUSTED DRIVER
+                                                            </Badge>
+                                                        )}
                                                     </div>
                                                 </div>
                                                 <div className="text-right">
-                                                    <div className="text-xl font-bold text-primary">₹{ride.price}</div>
-                                                    <div className="text-[10px] text-text-muted font-medium uppercase">per seat</div>
-                                                </div>
-                                            </div>
-
-                                            {/* Left: Driver Info */}
-                                            <div className="lg:col-span-3 flex lg:flex-col items-center lg:items-center justify-start lg:justify-center gap-4 text-left border-b lg:border-b-0 lg:border-r border-border pb-4 lg:pb-0 mb-4 lg:mb-0 lg:pr-4">
-                                                <div className="relative flex-shrink-0">
-                                                    <img
-                                                        src={ride.driver?.profilePicture || "https://via.placeholder.com/60"}
-                                                        alt={ride.driver?.name || "Driver"}
-                                                        className="w-12 h-12 lg:w-16 lg:h-16 rounded-full object-cover border-2 border-surface shadow-sm"
-                                                    />
-                                                    {ride.driver?.avgRating >= 4.5 && (
-                                                        <div className="absolute -bottom-1 -right-1 bg-surface rounded-full p-0.5 shadow-sm">
-                                                            <svg className="w-4 h-4 text-warning fill-current" viewBox="0 0 24 24"><path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" /></svg>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                                <div className="flex-1 lg:text-center lg:w-full min-w-0">
-                                                    <h4 className="font-bold text-text truncate max-w-[150px] lg:mx-auto">{ride.driver?.name || "Unknown Driver"}</h4>
-                                                    <div className="flex items-center lg:justify-center text-xs text-text-muted mt-0.5 mb-2">
-                                                        <span className="flex items-center text-warning font-medium mr-2">
-                                                            {ride.driver?.avgRating ? ride.driver.avgRating.toFixed(1) : 'New'} ★
-                                                        </span>
-                                                        <span>(12 rides)</span>
-                                                    </div>
-                                                    <button
-                                                        onClick={() => ride.driver && handleViewProfile(ride.driver._id)}
-                                                        className="text-primary text-xs font-semibold hover:underline flex items-center lg:justify-center"
-                                                        disabled={!ride.driver}
-                                                    >
-                                                        View Profile
-                                                    </button>
-
-                                                    <div className="flex gap-1 justify-center mt-2 flex-wrap">
-                                                        {ride.driver?.travelPreferences && ride.driver.travelPreferences.slice(0, 3).map((pref, i) => (
-                                                            <span key={i} className="text-[10px] bg-neutral px-1.5 py-0.5 rounded text-text-muted border border-border" title={pref}>
-                                                                {pref === 'No Smoking' ? '🚭' : pref === 'Music Friendly' ? '🎵' : pref === 'Pet Friendly' ? '🐾' : '✨'}
-                                                            </span>
-                                                        ))}
-                                                    </div>
-                                                </div>
-                                            </div>
-
-                                            {/* Middle: Journey Details */}
-                                            <div className="lg:col-span-6 flex flex-col justify-center gap-4 lg:px-2 mb-4 lg:mb-0">
-                                                <div className="flex items-start lg:items-center justify-between gap-4">
-                                                    <div className="text-left flex-1 min-w-0">
-                                                        <div className="hidden lg:block text-xl font-bold text-text mb-1">{new Date(ride.dateTime).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
-                                                        <div className="text-base font-bold text-text lg:text-text-muted/80 truncate">{ride.source?.name?.split(',')[0]}</div>
-                                                        <div className="text-xs text-text-muted truncate hidden lg:block">{ride.source?.name}</div>
-                                                    </div>
-
-                                                    {/* Route Visualizer */}
-                                                    <div className="flex-shrink-0 flex flex-col items-center px-1 self-stretch lg:self-auto justify-center">
-                                                        <div className="lg:hidden h-full min-h-[40px] w-0.5 bg-border relative my-1">
-                                                            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full border-2 border-primary bg-surface"></div>
-                                                            <div className="absolute bottom-0 left-1/2 -translate-x-1/2 w-2 h-2 rounded-full border-2 border-primary bg-primary"></div>
-                                                        </div>
-                                                        <div className="hidden lg:flex w-full items-center">
-                                                            <div className="w-2 h-2 rounded-full border-2 border-primary bg-background"></div>
-                                                            <div className="flex-1 h-0.5 bg-border w-16 mx-2 relative group">
-                                                                <span className="absolute -top-4 left-1/2 -translate-x-1/2 text-[10px] text-text-muted font-mono whitespace-nowrap bg-surface px-1">4h 30m</span>
-                                                            </div>
-                                                            <div className="w-2 h-2 rounded-full border-2 border-primary bg-primary"></div>
-                                                        </div>
-                                                    </div>
-
-                                                    <div className="text-right flex-1 min-w-0">
-                                                        <div className="hidden lg:block text-xl font-bold text-text-muted/60 mb-1">--:--</div>
-                                                        <div className="text-xl lg:text-base font-bold text-text lg:text-text-muted/80 truncate">{ride.destination?.name?.split(',')[0]}</div>
-                                                        <div className="text-xs text-text-muted truncate hidden lg:block">{ride.destination.name}</div>
-
-                                                        {/* Mobile Price */}
-                                                        <div className="lg:hidden mt-2">
-                                                            <span className="text-lg font-bold text-primary">₹{ride.estimatedPrice || ride.price}</span>
-                                                        </div>
-                                                    </div>
-                                                </div>
-
-                                                {/* Mini Badges Line */}
-                                                <div className="flex items-center gap-2 mt-2 flex-wrap">
-                                                    <Badge variant="neutral" size="sm" className="font-normal text-text-muted">
-                                                        <span className="mr-1">🚗</span> {ride.vehicle?.model || "Standard"}
-                                                    </Badge>
-                                                    <Badge variant="success" size="sm" className="font-normal">
-                                                        <span className="mr-1">🛡️</span> Verified
-                                                    </Badge>
-                                                    {ride.distanceToMeetingPoint && (
-                                                        <Badge variant="info" size="sm" className="font-normal">
-                                                            <span className="mr-1">📍</span> {ride.distanceToMeetingPoint.toFixed(1)} km to meeting point
-                                                        </Badge>
-                                                    )}
-                                                </div>
-                                            </div>
-
-                                            {/* Right: Price & Action */}
-                                            <div className="lg:col-span-3 flex flex-row lg:flex-col justify-between items-center lg:items-end lg:justify-center gap-3 lg:pl-4 lg:border-l border-border pt-2 lg:pt-0">
-                                                <div className="hidden lg:block text-right mb-2">
                                                     <div className="text-2xl font-bold text-primary">₹{ride.estimatedPrice || ride.price}</div>
                                                     <div className="text-xs text-text-muted font-medium">per seat</div>
                                                 </div>
+                                            </div>
 
-                                                <div className="hidden lg:block text-sm font-bold items-center gap-1 mb-2">
-                                                    <Badge variant={ride.availableSeats <= 1 ? "error" : "success"} size="sm">
-                                                        {ride.availableSeats} seats left
-                                                    </Badge>
+                                            {/* Route Visualization */}
+                                            <div className="flex gap-4 items-center mb-5 relative pl-2">
+                                                {/* Line */}
+                                                <div className="absolute left-[11px] top-2 bottom-2 w-0.5 bg-border"></div>
+
+                                                <div className="flex-1 space-y-4">
+                                                    <div className="flex items-center gap-3 relative z-10">
+                                                        <div className="w-2.5 h-2.5 rounded-full bg-background border-[3px] border-text-muted"></div>
+                                                        <div className="flex-1">
+                                                            <div className="text-base font-bold text-text">{ride.source?.name?.split(',')[0]}</div>
+                                                            <div className="text-xs text-text-muted truncate max-w-[200px]">{ride.source?.name}</div>
+                                                        </div>
+                                                    </div>
+                                                    <div className="flex items-center gap-3 relative z-10">
+                                                        <div className="w-2.5 h-2.5 rounded-full bg-background border-[3px] border-primary"></div>
+                                                        <div className="flex-1">
+                                                            <div className="text-base font-bold text-text">{ride.destination?.name?.split(',')[0]}</div>
+                                                            <div className="text-xs text-text-muted truncate max-w-[200px]">{ride.destination?.name}</div>
+                                                        </div>
+                                                    </div>
                                                 </div>
 
-                                                <div className="flex flex-col gap-2 w-full lg:w-auto min-w-[140px]">
+                                                {/* Action Buttons (Right Aligned on Desktop) */}
+                                                <div className="flex flex-col items-end gap-2 min-w-[140px]">
                                                     {ride.availableSeats === 0 || ride.isFull ? (
-                                                        <div className="flex flex-col gap-1.5 w-full">
-                                                            <Button
-                                                                onClick={() => handleJoinWaitlist(ride._id)}
-                                                                disabled={ride.driver._id === user?._id}
-                                                                className="w-full bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
-                                                                size="sm"
-                                                            >
-                                                                <span>⌛ Join Waitlist</span>
-                                                            </Button>
-                                                            <div className="text-[10px] text-error font-bold text-center uppercase tracking-tighter bg-error/5 py-1 rounded-md border border-error/10">
-                                                                {ride.availableSeats === 0 ? "Ride is Fully Booked" : "Insufficient Seats"}
-                                                            </div>
-                                                        </div>
-                                                    ) : (
                                                         <Button
-                                                            onClick={() => handleBook(ride, ride.pickupMeetingPoint, ride.distanceToMeetingPoint)}
+                                                            onClick={(e) => { e.stopPropagation(); handleJoinWaitlist(ride._id); }}
                                                             disabled={ride.driver._id === user?._id}
-                                                            variant="primary"
-                                                            className="w-full bg-success hover:bg-green-600 border-success shadow-success/20"
+                                                            className="w-full bg-orange-500 hover:bg-orange-600 text-white shadow-sm"
                                                             size="sm"
                                                         >
-                                                            <span>{ride.driver._id === user?._id ? 'Your Ride' : 'Book Now'}</span>
+                                                            Join Waitlist
+                                                        </Button>
+                                                    ) : (
+                                                        <Button
+                                                            onClick={(e) => { e.stopPropagation(); handleBook(ride, ride.pickupMeetingPoint, ride.distanceToMeetingPoint); }}
+                                                            disabled={ride.driver._id === user?._id}
+                                                            variant="primary"
+                                                            className="w-full font-bold shadow-md hover:shadow-lg hover:-translate-y-0.5 transition-all"
+                                                        >
+                                                            {ride.driver._id === user?._id ? 'Your Ride' : 'Book Now'}
                                                         </Button>
                                                     )}
-
-                                                    <Button
-                                                        variant="ghost"
-                                                        size="sm"
-                                                        onClick={() => handleViewRoute(ride)}
-                                                        className="w-full text-xs"
+                                                    <button
+                                                        onClick={(e) => { e.stopPropagation(); handleViewRoute(ride); }}
+                                                        className="text-primary text-xs font-semibold hover:underline"
                                                     >
                                                         {selectedRide === ride._id ? 'Hide Map' : 'View on Map'}
-                                                    </Button>
+                                                    </button>
                                                 </div>
+                                            </div>
+
+                                            {/* Secondary Info (Collapsed by default, visible on hover/group-hover) */}
+                                            <div className="border-t border-border/50 pt-3 mt-2 opacity-100 md:opacity-0 md:h-0 md:group-hover:opacity-100 md:group-hover:h-auto transition-all duration-300 overflow-hidden flex flex-wrap gap-2">
+                                                <Badge variant="neutral" size="sm" className="font-normal text-text-muted">
+                                                    🚗 {ride.vehicle?.model || "Standard"}
+                                                </Badge>
+                                                <Badge variant={ride.availableSeats <= 1 ? "error" : "success"} size="sm">
+                                                    {ride.availableSeats} seats left
+                                                </Badge>
+                                                {ride.driver?.travelPreferences?.map((pref, i) => (
+                                                    <Badge key={i} variant="neutral" size="sm" className="font-normal text-text-muted bg-surface border border-border">
+                                                        {pref}
+                                                    </Badge>
+                                                ))}
                                             </div>
                                         </div>
 
@@ -783,23 +747,62 @@ const SearchRides = () => {
                                 ))
                             ) : (
                                 /* Empty State */
-                                <div className="text-center py-20 bg-surface rounded-2xl border border-dashed border-border">
-                                    <div className="w-24 h-24 bg-neutral rounded-full flex items-center justify-center mx-auto mb-6">
-                                        <svg className="w-12 h-12 text-text-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                                <div className="text-center py-24 bg-surface/50 rounded-2xl border border-dashed border-border/50">
+                                    <div className="w-20 h-20 bg-neutral/50 rounded-full flex items-center justify-center mx-auto mb-6">
+                                        <span className="text-4xl">🌵</span>
                                     </div>
-                                    <h3 className="text-xl font-bold text-text mb-2">No rides available on this route yet</h3>
-                                    <p className="text-text-muted max-w-md mx-auto mb-8">
-                                        Try changing the date or widening your search area to find more drivers.
+                                    <h3 className="text-xl font-bold text-text mb-2">This route is quiet right now</h3>
+                                    <p className="text-text-muted max-w-md mx-auto mb-8 text-sm">
+                                        But it won't be for long. Drivers post rides every hour.
                                     </p>
-                                    <Button variant="outline">
-                                        🔔 Notify me when a ride opens
-                                    </Button>
+                                    <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                        <Button variant="outline" className="border-primary/20 hover:bg-primary/5 text-primary">
+                                            🔔 Notify me when a ride opens
+                                        </Button>
+                                        <Button
+                                            variant="ghost"
+                                            onClick={() => navigate('/offer-ride')}
+                                        >
+                                            Offer this ride yourself →
+                                        </Button>
+                                    </div>
                                 </div>
                             )}
                         </div>
                     </div>
                 )}
             </div>
+
+            {/* Mobile Sticky Actions Bar */}
+            <AnimatePresence>
+                {searched && rides.length > 0 && (
+                    <motion.div
+                        initial={{ y: 100 }}
+                        animate={{ y: 0 }}
+                        exit={{ y: 100 }}
+                        className="fixed bottom-0 left-0 right-0 z-40 bg-surface border-t border-border p-3 lg:hidden flex gap-3 shadow-[0_-5px_20px_rgba(0,0,0,0.1)] pb-safe"
+                    >
+                        <Button
+                            variant="outline"
+                            className="flex-1 rounded-xl border-border bg-background"
+                            size="md"
+                            leftIcon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" /></svg>}
+                        >
+                            Filter
+                        </Button>
+                        <div className="w-px bg-border my-2"></div>
+                        <select
+                            value={sortBy}
+                            onChange={(e) => setSortBy(e.target.value)}
+                            className="flex-1 bg-background border border-border rounded-xl px-4 font-medium text-sm focus:outline-none focus:border-primary appearance-none text-center"
+                        >
+                            <option value="earliest">🕒 Earliest</option>
+                            <option value="price_low">💰 Cheapest</option>
+                            <option value="seats_available">💺 Most Seats</option>
+                        </select>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div >
     );
 };

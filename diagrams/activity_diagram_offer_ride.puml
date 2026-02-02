@@ -1,0 +1,55 @@
+@startuml
+title Activity Diagram: Driver Listing a Ride
+
+start
+
+:Driver Opens App;
+
+partition "Authentication" {
+  if (Is Driver Logged In?) then (No)
+    :Show Login Screen;
+    :Enter Credentials;
+    if (Credentials Valid?) then (No)
+      :Show Error Message;
+      stop
+    else (Yes)
+      :Authenticate Driver;
+    endif
+  else (Yes)
+    :Retrieve Session;
+  endif
+}
+
+:Navigate to "Offer a Ride" Page;
+
+repeat
+  :Fill in Ride Details;
+  note right
+    - Source & Destination
+    - Date & Time
+    - Price per Seat
+    - Total Seats
+    - Vehicle Details
+  end note
+  
+  :Submit Form;
+  
+  if (Are Details Valid?) then (No)
+    :Show Validation Errors;
+    note right: e.g., Date in past, invalid price
+  else (Yes)
+    break
+  endif
+repeat while (Details Invalid)
+
+partition "System Processing" {
+  :Create New Ride Listing;
+  :Calculate Distance & Estimated Duration;
+  :Save Ride to Database;
+}
+
+:Display Confirmation Message;
+:Send Notification to Driver;
+
+stop
+@enduml

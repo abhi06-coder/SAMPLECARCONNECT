@@ -1,0 +1,40 @@
+@startuml
+title Component Diagram: CarConnect System
+
+package "Frontend Application" {
+  component [React UI] as UI
+  component [API Service] as APIService
+  component [Auth Context] as AuthCtx
+  
+  UI --> APIService : Uses
+  UI --> AuthCtx : Subscribe
+}
+
+package "Backend Application" {
+  component [API Routes] as Routes
+  component [Controllers] as Controllers
+  component [Models (Mongoose)] as Models
+  component [Auth Middleware] as AuthMW
+  
+  Routes --> Controllers : Dispatches
+  Controllers --> Models : CRUD Operations
+  Routes ..> AuthMW : Protected By
+}
+
+database "MongoDB" as DB
+cloud "Firebase Auth" as Firebase
+cloud "Razorpay" as Razorpay
+
+' Interfaces & Connections
+
+APIService --(0- Routes : HTTP/REST API
+AuthCtx --(0- Firebase : Auth Token
+
+AuthMW --(0- Firebase : Verify Token
+
+Models --(0- DB : Read/Write Data
+
+Controllers --(0- Razorpay : Create Orders/Verify
+UI --(0- Razorpay : Checkout
+
+@enduml
