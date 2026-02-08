@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
-import DataTable from '../../components/admin/DataTable';
+import AdminPageHeader from '../../components/admin/AdminPageHeader';
+import AdminTable from '../../components/admin/AdminTable';
 import Button from '../../components/ui/Button';
+import Badge from '../../components/ui/Badge';
+import { RefreshCw, CheckCircle, XCircle, Shield, MapPin, Filter } from 'lucide-react';
 
 const RefundRequests = () => {
     const [refunds, setRefunds] = useState([]);
@@ -17,16 +20,14 @@ const RefundRequests = () => {
             const config = {
                 params: { pageNumber, status: filter === 'All' ? '' : filter }
             };
-            console.log('🔵 [Frontend] API call config:', config);
             const { data } = await api.get('/admin/refunds', config);
-            console.log('✅ [Frontend] Refunds received:', data);
 
             setRefunds(Array.isArray(data) ? data : (data.refunds || []));
-
-            console.log('📊 [Frontend] State updated - refunds count:', data.refunds?.length);
+            // Assuming pagination data might be missing in some responses based on previous code
+            // ensuring fallback
+            setTotalPages(data.pages || 1);
         } catch (error) {
             console.error('❌ [Frontend] Refund fetch error:', error);
-            console.error('❌ [Frontend] Error response:', error.response);
         } finally {
             setLoading(false);
         }
@@ -44,7 +45,7 @@ const RefundRequests = () => {
         const reason = status === 'Rejected' ? prompt("Enter rejection reason:") : null;
         if (status === 'Rejected' && !reason) return;
 
-        if (!window.confirm(`Are you sure you want to ${status} this refund? This is a simulation.`)) return;
+        if (!window.confirm(`Are you sure you want to ${status} this refund?`)) return;
 
         try {
             await api.put(`/admin/refunds/${id}`, {
@@ -61,39 +62,76 @@ const RefundRequests = () => {
 
     const columns = [
         {
-            key: 'rideReference', header: 'Type / Driver', render: (row) => (
-                <div>
-                    <div className="font-bold">
-                        {row.type === 'DEPOSIT' ? '🛡️ Security Deposit' : `Ride: ${row.rideId?.source?.name || '?'} ➝ ${row.rideId?.destination?.name || '?'}`}
+            key: 'rideReference', header: 'Request Details', render: (row) => (
+                <div className="flex items-start gap-3">
+                    <div className="mt-1">
+                        {row.type === 'DEPOSIT' ? (
+                            <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                                <Shield className="w-4 h-4" />
+                            </div>
+                        ) : (
+                            <div className="p-2 bg-secondary/10 rounded-lg text-secondary">
+                                <MapPin className="w-4 h-4" />
+                            </div>
+                        )}
                     </div>
-                    <div className="text-xs text-text-muted">Driver: {row.driverId?.name} ({row.driverId?.email})</div>
+                    <div>
+                        <div className="font-bold text-text">
+                            {row.type === 'DEPOSIT' ? 'Security Deposit Refund' : `Ride Refund`}
+                        </div>
+                        {row.type !== 'DEPOSIT' && (
+                            <div className="text-xs font-medium text-text mt-0.5">
+                                {row.rideId?.source?.name || '?'} ➝ {row.rideId?.destination?.name || '?'}
+                            </div>
+                        )}
+                        <div className="text-xs text-text-muted mt-1">
+                            Driver: <span className="font-medium text-text">{row.driverId?.name}</span>
+                        </div>
+                    </div>
                 </div>
             )
         },
-        { key: 'amount', header: 'Amount', render: (row) => `₹${row.amount}` },
-        { key: 'reason', header: 'Reason' },
+        {
+            key: 'amount',
+            header: 'Amount',
+            render: (row) => <span className="font-bold font-mono text-text">₹{row.amount}</span>
+        },
+        {
+            key: 'reason',
+            header: 'Reason',
+            render: (row) => <span className="text-sm text-text-muted italic">"{row.reason}"</span>
+        },
         {
             key: 'status', header: 'Status', render: (row) => (
-                <span className={`px-2 py-1 rounded-full text-xs font-bold ${row.status === 'Approved' ? 'bg-green-500/10 text-green-500' :
-                    row.status === 'Rejected' ? 'bg-red-500/10 text-red-500' :
-                        'bg-yellow-500/10 text-yellow-500'
-                    }`}>
+                <Badge variant={
+                    row.status === 'Approved' ? 'success' :
+                        row.status === 'Rejected' ? 'error' : 'warning'
+                }>
                     {row.status}
-                </span>
+                </Badge>
             )
         },
         { key: 'createdAt', header: 'Date', render: (row) => new Date(row.createdAt).toLocaleDateString() },
     ];
 
     const renderActions = (row) => {
-        if (row.status !== 'Pending') return <span className="text-text-muted">-</span>;
+        if (row.status !== 'Pending') return <span className="text-text-muted text-xs italic">Processed</span>;
         return (
-            <div className="flex justify-end space-x-2">
-                <Button size="sm" className="bg-green-600 hover:bg-green-700 text-white" onClick={() => handleProcessRefund(row._id, 'Approved')}>
-                    Approve
+            <div className="flex justify-end gap-2">
+                <Button
+                    size="sm"
+                    className="h-8 px-3 text-xs bg-success hover:bg-success-hover text-white shadow-none"
+                    onClick={() => handleProcessRefund(row._id, 'Approved')}
+                >
+                    <CheckCircle className="w-3 h-3 mr-1" /> Approve
                 </Button>
-                <Button size="sm" variant="danger" onClick={() => handleProcessRefund(row._id, 'Rejected')}>
-                    Reject
+                <Button
+                    size="sm"
+                    variant="danger"
+                    className="h-8 px-3 text-xs shadow-none"
+                    onClick={() => handleProcessRefund(row._id, 'Rejected')}
+                >
+                    <XCircle className="w-3 h-3 mr-1" /> Reject
                 </Button>
             </div>
         );
@@ -101,14 +139,26 @@ const RefundRequests = () => {
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Refund Requests</h1>
-                <div className="flex space-x-2">
+            <AdminPageHeader
+                title="Refund Requests"
+                subtitle="Review and process driver deposit and ride refunds."
+            >
+                <Button onClick={() => fetchRefunds(page)} variant="outline" size="sm">
+                    <RefreshCw className="w-4 h-4 mr-2" /> Refresh
+                </Button>
+            </AdminPageHeader>
+
+            <div className="bg-surface border border-border rounded-2xl p-4 mb-6 shadow-sm">
+                <div className="flex items-center gap-2 overflow-x-auto pb-2 md:pb-0">
+                    <Filter className="w-4 h-4 text-text-muted" />
+                    <span className="text-sm font-medium text-text-muted mr-2">Filter by Status:</span>
                     {['Pending', 'Approved', 'Rejected', 'All'].map(s => (
                         <button
                             key={s}
                             onClick={() => setFilter(s)}
-                            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${filter === s ? 'bg-primary text-white' : 'bg-neutral text-text-muted hover:text-text'
+                            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${filter === s
+                                    ? 'bg-primary text-white shadow-md shadow-primary/20'
+                                    : 'bg-neutral text-text-muted hover:bg-neutral-hover hover:text-text'
                                 }`}
                         >
                             {s}
@@ -117,15 +167,14 @@ const RefundRequests = () => {
                 </div>
             </div>
 
-            {console.log('🎨 [Frontend] Rendering DataTable with refunds:', refunds, 'length:', refunds?.length)}
-
-            <DataTable
+            <AdminTable
                 columns={columns}
                 data={refunds}
                 isLoading={loading}
-                pagination={{ page, pages: totalPages }}
+                pagination={{ page, pages: totalPages, total: refunds.length }}
                 onPageChange={setPage}
                 actions={renderActions}
+                emptyMessage="No refund requests found matching the filter."
             />
         </div>
     );

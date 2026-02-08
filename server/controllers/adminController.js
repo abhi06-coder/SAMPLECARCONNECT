@@ -172,10 +172,78 @@ const getRideAnalytics = async (req, res) => {
     }
 };
 
+// @desc    Get Admin Dashboard Stats
+// @route   GET /api/admin/dashboard
+// @access  Private/Admin
+const getDashboardStats = async (req, res) => {
+    try {
+        // 1. KPI Counts
+        const totalUsers = await User.countDocuments({});
+
+        const Ride = (await import('../models/Ride.js')).default;
+        const totalRides = await Ride.countDocuments({});
+        const activeRides = await Ride.countDocuments({ status: 'active', dateTime: { $gte: new Date() } });
+        const completedRides = await Ride.countDocuments({ status: 'completed' });
+
+        // Calculate Revenue (Approximate: Sum of (Booked Seats * Price) for all rides)
+        // ideally we should have a Booking model, but using Ride data for now as per available models
+        const revenueAgg = await Ride.aggregate([
+            {
+                $project: {
+                    bookedSeats: { $subtract: ["$totalSeats", "$availableSeats"] },
+                    price: 1
+                }
+            },
+            {
+                $group: {
+                    _id: null,
+                    totalRevenue: { $sum: { $multiply: ["$bookedSeats", "$price"] } },
+                    totalBookings: { $sum: "$bookedSeats" }
+                }
+            }
+        ]);
+
+        const totalRevenue = revenueAgg[0]?.totalRevenue || 0;
+        const totalBookings = revenueAgg[0]?.totalBookings || 0;
+
+        // 2. Recent Activity (Latest 5 Rides)
+        const recentRides = await Ride.find()
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .populate('driver', 'name email');
+
+        // 3. Attention Needed
+        const RefundRequest = (await import('../models/RefundRequest.js')).default;
+        const pendingRefunds = await RefundRequest.countDocuments({ status: 'Pending' });
+
+        const UserReport = (await import('../models/UserReport.js')).default;
+        const pendingReports = await UserReport.countDocuments({ status: 'Pending' });
+
+        res.json({
+            kpis: {
+                totalUsers,
+                activeRides,
+                totalBookings,
+                totalRevenue
+            },
+            recentActivity: recentRides,
+            attentionNeeded: {
+                pendingRefunds,
+                pendingReports
+            }
+        });
+
+    } catch (error) {
+        console.error('Dashboard Stats Error:', error);
+        res.status(500).json({ message: error.message });
+    }
+};
+
 export {
     getUsers,
     updateUserStatus,
     getRideAnalytics,
+    getDashboardStats, // Added
     getRefundRequests,
     processRefundRequest,
     getFeedback,
@@ -278,6 +346,7 @@ const processRefundRequest = async (req, res) => {
                 user.isDriver = false;
                 user.razorpayPaymentId = null;
                 user.razorpayOrderId = null;
+                user.vehicle = null; // Clear vehicle data
                 await user.save();
 
                 // Update refund request

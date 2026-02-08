@@ -49,7 +49,7 @@ function App() {
       <AuthProvider>
         <Router>
           <div className="min-h-screen bg-transparent text-text transition-colors duration-300 relative">
-            <PlasmaBackground />
+            {/* <PlasmaBackground /> - Removed as per request "remove that back lights" */}
             <Navbar />
             <Routes>
               <Route path="/" element={<Home />} />

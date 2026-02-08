@@ -14,8 +14,10 @@ import {
     Heart,
     Mail,
     Lock,
-    FileText
+    FileText,
+    ArrowRight
 } from 'lucide-react';
+import Button from './ui/Button';
 
 const Footer = () => {
     const { user } = useAuth();
@@ -67,13 +69,34 @@ const Footer = () => {
     );
 
     return (
-        <footer className="bg-gradient-to-b from-surface/50 to-surface backdrop-blur-md border-t border-white/10 pt-16 pb-8 mt-20 relative overflow-hidden">
+        <footer className="bg-gradient-to-b from-surface/50 to-surface backdrop-blur-md border-t border-white/10 pt-0 pb-8 mt-20 relative overflow-hidden">
+            {/* Pre-Footer CTA */}
+            <div className="w-full bg-primary/10 border-b border-white/5 py-12">
+                <div className="container-custom">
+                    <div className="flex flex-col md:flex-row items-center justify-between gap-6 text-center md:text-left">
+                        <div>
+                            <h3 className="text-2xl font-bold font-heading mb-2">Ready to travel smarter?</h3>
+                            <p className="text-text-muted">Join thousands of users saving money and the planet.</p>
+                        </div>
+                        <Link to="/search-rides">
+                            <Button
+                                size="lg"
+                                className="px-8 shadow-lg shadow-primary/20 hover:shadow-primary/40"
+                                rightIcon={<ArrowRight className="w-5 h-5" />}
+                            >
+                                Find a Ride
+                            </Button>
+                        </Link>
+                    </div>
+                </div>
+            </div>
+
             {/* Decorative background elements */}
             <div className="absolute top-0 left-1/4 w-64 h-64 bg-primary/5 rounded-full blur-[100px] pointer-events-none" />
             <div className="absolute bottom-0 right-1/4 w-64 h-64 bg-secondary/5 rounded-full blur-[100px] pointer-events-none" />
 
-            <div className="container-custom relative z-10">
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 lg:gap-12 mb-12">
+            <div className="container-custom relative z-10 pt-16">
+                <div className="grid grid-cols-1 md:grid-cols-4 gap-8 mb-8">
                     {/* 1. Brand Section */}
                     <div className="space-y-6 md:col-span-1">
                         <Link to="/" className="inline-block">

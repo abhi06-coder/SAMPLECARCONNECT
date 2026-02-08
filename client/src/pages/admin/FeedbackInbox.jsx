@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
-import DataTable from '../../components/admin/DataTable';
+import AdminPageHeader from '../../components/admin/AdminPageHeader';
+import AdminTable from '../../components/admin/AdminTable';
 import Button from '../../components/ui/Button';
+import Badge from '../../components/ui/Badge';
+import { RefreshCw, MessageSquare, Reply, CheckCheck, Filter } from 'lucide-react';
 
 const FeedbackInbox = () => {
     const [feedback, setFeedback] = useState([]);
@@ -51,42 +54,83 @@ const FeedbackInbox = () => {
     };
 
     const columns = [
-        { key: 'user', header: 'User', render: (row) => `${row.userId?.name} (${row.userId?.email})` },
         {
-            key: 'message', header: 'Message', render: (row) => (
-                <div className="max-w-md truncate" title={row.message}>{row.message}</div>
+            key: 'user',
+            header: 'User Details',
+            render: (row) => (
+                <div className="flex items-center gap-3">
+                    <div className="w-8 h-8 rounded-full bg-neutral flex items-center justify-center">
+                        <MessageSquare className="w-4 h-4 text-text-muted" />
+                    </div>
+                    <div>
+                        <div className="font-bold text-text text-sm">{row.userId?.name || 'Anonymous'}</div>
+                        <div className="text-xs text-text-muted">{row.userId?.email || 'N/A'}</div>
+                    </div>
+                </div>
             )
         },
         {
-            key: 'status', header: 'Status', render: (row) => (
-                <span className={`px-2 py-1 rounded-full text-xs font-bold ${row.status === 'Open' ? 'bg-red-500/10 text-red-500' : 'bg-green-500/10 text-green-500'
-                    }`}>
+            key: 'message',
+            header: 'Message Content',
+            render: (row) => (
+                <div className="max-w-md">
+                    <p className="text-sm text-text line-clamp-2" title={row.message}>{row.message}</p>
+                </div>
+            )
+        },
+        {
+            key: 'status',
+            header: 'Status',
+            render: (row) => (
+                <Badge variant={row.status === 'Open' ? 'error' : 'success'}>
                     {row.status}
-                </span>
+                </Badge>
             )
         },
-        { key: 'createdAt', header: 'Date', render: (row) => new Date(row.createdAt).toLocaleDateString() },
+        { key: 'createdAt', header: 'Submitted', render: (row) => new Date(row.createdAt).toLocaleDateString() },
     ];
 
     const renderActions = (row) => {
-        if (row.status !== 'Open') return <span className="text-text-muted">Closed</span>;
+        if (row.status !== 'Open') return (
+            <div className="flex justify-end text-success text-xs font-bold items-center">
+                <CheckCheck className="w-3 h-3 mr-1" /> Replied
+            </div>
+        );
         return (
-            <Button size="sm" onClick={() => handleReply(row._id)}>
-                Reply
-            </Button>
+            <div className="flex justify-end">
+                <Button
+                    size="sm"
+                    className="h-8 px-3 text-xs"
+                    onClick={() => handleReply(row._id)}
+                >
+                    <Reply className="w-3 h-3 mr-1" /> Reply
+                </Button>
+            </div>
         );
     };
 
     return (
         <div>
-            <div className="flex justify-between items-center mb-6">
-                <h1 className="text-3xl font-bold">Feedback / Queries</h1>
-                <div className="flex space-x-2">
+            <AdminPageHeader
+                title="Feedback Inbox"
+                subtitle="Manage user queries and support tickets."
+            >
+                <Button onClick={() => fetchFeedback(page)} variant="outline" size="sm">
+                    <RefreshCw className="w-4 h-4 mr-2" /> Refresh
+                </Button>
+            </AdminPageHeader>
+
+            <div className="bg-surface border border-border rounded-2xl p-4 mb-6 shadow-sm">
+                <div className="flex items-center gap-2">
+                    <Filter className="w-4 h-4 text-text-muted" />
+                    <span className="text-sm font-medium text-text-muted mr-2">Filter by Status:</span>
                     {['Open', 'Closed', 'All'].map(s => (
                         <button
                             key={s}
                             onClick={() => setFilter(s)}
-                            className={`px-4 py-2 rounded-xl text-sm font-medium transition-colors ${filter === s ? 'bg-primary text-white' : 'bg-neutral text-text-muted hover:text-text'
+                            className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${filter === s
+                                    ? 'bg-primary text-white shadow-md shadow-primary/20'
+                                    : 'bg-neutral text-text-muted hover:bg-neutral-hover hover:text-text'
                                 }`}
                         >
                             {s}
@@ -95,13 +139,14 @@ const FeedbackInbox = () => {
                 </div>
             </div>
 
-            <DataTable
+            <AdminTable
                 columns={columns}
                 data={feedback}
                 isLoading={loading}
                 pagination={{ page, pages: totalPages }}
                 onPageChange={setPage}
                 actions={renderActions}
+                emptyMessage="No feedback found."
             />
         </div>
     );

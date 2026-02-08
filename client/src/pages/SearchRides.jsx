@@ -34,6 +34,8 @@ const SearchRides = () => {
     const [showStickyHeader, setShowStickyHeader] = useState(false);
     const [showToast, setShowToast] = useState(false);
 
+    const [hasAlert, setHasAlert] = useState(false); // Alert State
+
     // Booking Modal State
     const [isBookingModalOpen, setIsBookingModalOpen] = useState(false);
     const [bookingData, setBookingData] = useState({
@@ -133,6 +135,65 @@ const SearchRides = () => {
             console.error("Search failed", error);
         } finally {
             setLoading(false);
+        }
+        setLoading(false);
+    }
+
+    // Check for existing alert when search params change (and are valid)
+    useEffect(() => {
+        const checkAlert = async () => {
+            if (searchParams.source && searchParams.destination && user) {
+                try {
+                    const { data } = await api.get('/alerts/check', {
+                        params: {
+                            source: searchParams.source.split(',')[0],
+                            destination: searchParams.destination.split(',')[0]
+                        }
+                    });
+                    setHasAlert(data.hasAlert);
+                } catch (error) {
+                    console.error("Failed to check alert status", error);
+                }
+            } else {
+                setHasAlert(false);
+            }
+        };
+        if (searched && rides.length === 0) { // Only check if searched and no rides? Or always? Better check when showing empty state.
+            checkAlert();
+        }
+    }, [searchParams.source, searchParams.destination, user, searched, rides.length]);
+
+    const handleNotify = async () => {
+        if (!user) {
+            navigate('/login');
+            return;
+        }
+
+        const source = searchParams.source?.split(',')[0];
+        const destination = searchParams.destination?.split(',')[0];
+
+        if (!source || !destination) return;
+
+        try {
+            if (hasAlert) {
+                // Cancel Alert
+                await api.delete('/alerts', {
+                    params: { source, destination }
+                });
+                setHasAlert(false);
+                alert("Alert cancelled. You will no longer receive notifications for this route.");
+            } else {
+                // Create Alert
+                await api.post('/alerts/create', {
+                    source,
+                    destination,
+                    date: searchParams.date
+                });
+                setHasAlert(true);
+                alert(`Alert set! We'll SMS you when a ride from ${source} to ${destination} opens up.`);
+            }
+        } catch (error) {
+            alert(error.response?.data?.message || "Failed to update alert");
         }
     };
 
@@ -756,8 +817,12 @@ const SearchRides = () => {
                                         But it won't be for long. Drivers post rides every hour.
                                     </p>
                                     <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                                        <Button variant="outline" className="border-primary/20 hover:bg-primary/5 text-primary">
-                                            🔔 Notify me when a ride opens
+                                        <Button
+                                            variant="outline"
+                                            className={`border-primary/20 hover:bg-primary/5 text-primary ${hasAlert ? 'bg-red-50 text-red-600 border-red-200 hover:bg-red-100' : ''}`}
+                                            onClick={handleNotify}
+                                        >
+                                            {hasAlert ? '🔕 Cancel Alert' : '🔔 Notify me when a ride opens'}
                                         </Button>
                                         <Button
                                             variant="ghost"

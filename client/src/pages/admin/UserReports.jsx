@@ -1,7 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import api from '../../utils/api';
-import DataTable from '../../components/admin/DataTable';
+import AdminPageHeader from '../../components/admin/AdminPageHeader';
+import AdminTable from '../../components/admin/AdminTable';
 import Button from '../../components/ui/Button';
+import Badge from '../../components/ui/Badge';
+import { AlertTriangle, CheckCircle, XCircle } from 'lucide-react';
 
 const UserReports = () => {
     const [reports, setReports] = useState([]);
@@ -9,7 +12,6 @@ const UserReports = () => {
     const [page, setPage] = useState(1);
     const [totalPages, setTotalPages] = useState(1);
 
-    // Auto-refresh logic not implemented to keep it simple, just load on mount
     const fetchReports = async (pageNumber = 1) => {
         setLoading(true);
         try {
@@ -49,22 +51,65 @@ const UserReports = () => {
     };
 
     const columns = [
-        { key: 'reportedUser', header: 'Reported User', render: (row) => `${row.reportedUserId?.name} (${row.reportedUserId?.email})` },
-        { key: 'reporter', header: 'Reported By', render: (row) => `${row.reportedBy?.name}` },
-        { key: 'type', header: 'Type', render: (row) => <span className="text-red-500 font-bold">{row.type}</span> },
-        { key: 'description', header: 'Description', render: (row) => <div className="max-w-xs truncate">{row.description}</div> },
-        { key: 'status', header: 'Status', render: (row) => row.status },
+        {
+            key: 'reportedUser',
+            header: 'Subject',
+            render: (row) => (
+                <div>
+                    <div className="font-bold text-text text-sm">{row.reportedUserId?.name || 'Unknown'}</div>
+                    <div className="text-xs text-text-muted">Reported by: {row.reportedBy?.name || 'Anonymous'}</div>
+                </div>
+            )
+        },
+        {
+            key: 'type',
+            header: 'Violation Type',
+            render: (row) => (
+                <div className="flex items-center gap-2 text-error font-medium">
+                    <AlertTriangle className="w-4 h-4" />
+                    {row.type}
+                </div>
+            )
+        },
+        {
+            key: 'description',
+            header: 'Description',
+            render: (row) => (
+                <div className="max-w-xs">
+                    <p className="text-sm text-text-muted line-clamp-2" title={row.description}>{row.description}</p>
+                </div>
+            )
+        },
+        {
+            key: 'status',
+            header: 'Status',
+            render: (row) => (
+                <Badge variant={row.status === 'Pending' ? 'warning' : row.status === 'Resolved' ? 'success' : 'neutral'}>
+                    {row.status}
+                </Badge>
+            )
+        },
     ];
 
     const renderActions = (row) => {
-        if (row.status !== 'Pending') return <span className="text-text-muted">Resolved</span>;
+        if (row.status !== 'Pending') return <span className="text-text-muted text-xs italic">Closed</span>;
         return (
             <div className="flex space-x-2 justify-end">
-                <Button size="sm" variant="danger" onClick={() => handleAction(row._id, 'Resolved')}>
-                    Punish/Resolve
+                <Button
+                    size="sm"
+                    variant="danger"
+                    className="h-8 px-3 text-xs"
+                    onClick={() => handleAction(row._id, 'Resolved')}
+                >
+                    <CheckCircle className="w-3 h-3 mr-1" /> Resolve
                 </Button>
-                <Button size="sm" variant="ghost" onClick={() => handleAction(row._id, 'Dismissed')}>
-                    Dismiss
+                <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-8 px-3 text-xs"
+                    onClick={() => handleAction(row._id, 'Dismissed')}
+                >
+                    <XCircle className="w-3 h-3 mr-1" /> Dismiss
                 </Button>
             </div>
         );
@@ -72,14 +117,19 @@ const UserReports = () => {
 
     return (
         <div>
-            <h1 className="text-3xl font-bold mb-6">User Reports & Abuse</h1>
-            <DataTable
+            <AdminPageHeader
+                title="User Reports & Abuse"
+                subtitle="Investigate and resolve user reported violations."
+            />
+
+            <AdminTable
                 columns={columns}
                 data={reports}
                 isLoading={loading}
                 pagination={{ page, pages: totalPages }}
                 onPageChange={setPage}
                 actions={renderActions}
+                emptyMessage="No pending reports."
             />
         </div>
     );

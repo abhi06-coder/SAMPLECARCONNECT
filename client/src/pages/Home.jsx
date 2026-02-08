@@ -2,73 +2,83 @@ import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import Button from '../components/ui/Button';
 import GradientText from '../components/GradientText';
+import { MapPin, Calendar, Search, ArrowRight, Shield, Zap, Leaf, MessageCircle, CreditCard, Users, Clock } from 'lucide-react';
+import { useState } from 'react';
 
 const Home = () => {
+    // Helper to get tomorrow's date in YYYY-MM-DD format
+    const getTomorrowDate = () => {
+        const tomorrow = new Date();
+        tomorrow.setDate(tomorrow.getDate() + 1);
+        return tomorrow.toISOString().split('T')[0];
+    };
+
+    const popularRoutes = [
+        { from: "Mumbai", to: "Pune" },
+        { from: "Bangalore", to: "Mysore" },
+        { from: "Delhi", to: "Agra" },
+        { from: "Chennai", to: "Pondicherry" },
+        { from: "Hyderabad", to: "Vijayawada" },
+        { from: "Jaipur", to: "Delhi" },
+        { from: "Pune", to: "Lonavala" },
+        { from: "Chandigarh", to: "Manali" }
+    ];
+
     const features = [
         {
-            icon: (
-                <svg className="w-8 h-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            ),
-            title: "Safe & Verified",
-            desc: "Every member is verified with government ID and phone checks."
+            icon: <Shield className="w-8 h-8 text-success" />,
+            title: "Verified Drivers",
+            desc: "Every driver is ID-verified for maximum safety and trust."
         },
         {
-            icon: (
-                <svg className="w-8 h-8 text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            ),
-            title: "Low-Cost Rides",
-            desc: "Save up to 75% on travel costs by sharing your journey."
+            icon: <Search className="w-8 h-8 text-primary" />,
+            title: "Smart Ride Matching",
+            desc: "Find rides that match your exact route, time, and preferences."
         },
         {
-            icon: (
-                <svg className="w-8 h-8 text-secondary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3.055 11H5a2 2 0 012 2v1a2 2 0 002 2 2 2 0 012 2v2.945M8 3.935V5.5A2.5 2.5 0 0010.5 8h.5a2 2 0 012 2 2 2 0 104 0 2 2 0 012-2h1.064M15 20.488V18a2 2 0 012-2h3.064M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
-            ),
-            title: "Eco-Friendly",
-            desc: "Reduce your carbon footprint. Help the planet one ride at a time."
+            icon: <Users className="w-8 h-8 text-secondary" />,
+            title: "Seat Availability",
+            desc: "See real-time seat availability and book instantly."
         },
         {
-            icon: (
-                <svg className="w-8 h-8 text-warning" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                </svg>
-            ),
-            title: "Real-Time Tracking",
-            desc: "Track your ride live on the map. Share your location with loved ones for extra safety."
+            icon: <CreditCard className="w-8 h-8 text-warning" />,
+            title: "Flexible Payments",
+            desc: "Pay securely via UPI, Wallet, or Cash as per your choice."
         },
         {
-            icon: (
-                <svg className="w-8 h-8 text-info" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z" />
-                </svg>
-            ),
-            title: "Instant Chat",
-            desc: "Coordinate pick-ups easily. Chat securely with your co-travelers within the app."
+            icon: <MapPin className="w-8 h-8 text-info" />,
+            title: "Route Preview",
+            desc: "View the exact route on the map before you book your seat."
         },
         {
-            icon: (
-                <svg className="w-8 h-8 text-success" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
-                </svg>
-            ),
-            title: "Secure Payments",
-            desc: "Cashless and hassle-free. Pay securely via UPI, Credit Card, or Wallet."
+            icon: <Clock className="w-8 h-8 text-success" />,
+            title: "Waitlist System",
+            desc: "Join the waitlist for full rides and get notified if a seat opens up."
         }
     ];
 
     return (
         <div className="min-h-screen bg-transparent text-text">
-            {/* Hero Section */}
-            <section className="relative overflow-hidden pt-20 pb-12 lg:pt-28 lg:pb-20 min-h-[calc(100vh-4rem)] flex items-center justify-center">
-                {/* Background blobs removed for Plasma visibility */}
+            <section className="relative overflow-hidden pt-14 pb-12 lg:pt-20 lg:pb-20 min-h-[calc(100vh-4rem)] flex items-center justify-center">
+                {/* Floating Illustration - Abstract Car/Map Concept */}
+                <motion.div
+                    className="absolute top-1/4 right-[10%] hidden lg:block opacity-20 pointer-events-none"
+                    animate={{ y: [0, -20, 0] }}
+                    transition={{ repeat: Infinity, duration: 6, ease: "easeInOut" }}
+                >
+                    <svg width="300" height="300" viewBox="0 0 100 100" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="50" cy="50" r="40" stroke="url(#paint0_linear)" strokeWidth="0.5" />
+                        <path d="M30 50L45 65L70 35" stroke="url(#paint0_linear)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                        <defs>
+                            <linearGradient id="paint0_linear" x1="0" y1="0" x2="100" y2="100" gradientUnits="userSpaceOnUse">
+                                <stop stopColor="#5227FF" />
+                                <stop offset="1" stopColor="#B19EEF" />
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </motion.div>
 
-                <div className="container-custom">
+                <div className="container-custom relative z-10">
                     <div className="flex flex-col items-center text-center">
                         <motion.div
                             initial={{ opacity: 0, y: 20 }}
@@ -77,18 +87,11 @@ const Home = () => {
                             className="max-w-4xl space-y-6 lg:space-y-8"
                         >
 
-                            <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold font-heading tracking-tight text-text leading-tight mt-4 lg:mt-0">
+                            <h1 className="text-4xl md:text-5xl lg:text-7xl font-extrabold font-heading tracking-tight text-text leading-snug mt-4 lg:mt-0 py-2">
+                                <span className="block text-text pb-2">Travel Together,</span>
                                 <GradientText
-                                    colors={["#0f172a", "#334155", "#0f172a"]} // Dark colors for "Travel Together" part to look like normal text but with subtle gradient
-                                    animationSpeed={8}
-                                    showBorder={false}
-                                    className="block"
-                                >
-                                    Travel Together,
-                                </GradientText>
-                                <GradientText
-                                    colors={["#5227FF", "#941490", "#B19EEF"]} // User provided colors
-                                    animationSpeed={8}
+                                    colors={["#5227FF", "#941490", "#B19EEF", "#5227FF"]} // Added restart color for smoother loop
+                                    animationSpeed={6} // Slightly faster for "alive" feel
                                     showBorder={false}
                                     className="block"
                                 >
@@ -99,35 +102,84 @@ const Home = () => {
                                 Join India's most trusted carpooling community. Share rides, split costs, and make travel eco-friendly and fun.
                             </p>
 
-                            <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4">
-                                <Link to="/search-rides">
-                                    <Button
-                                        size="lg"
-                                        className="w-full sm:w-auto text-lg h-auto py-4 shadow-lg shadow-primary/30 hover:shadow-primary/50 group"
-                                        leftIcon={<svg className="w-5 h-5 group-hover:animate-bounce" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>}
-                                    >
-                                        Find a Ride
-                                    </Button>
-                                </Link>
-                                <Link to="/offer-ride">
-                                    <Button
-                                        size="lg"
-                                        variant="outline"
-                                        className="w-full sm:w-auto text-lg h-auto py-4 border-2 border-text text-text hover:bg-text hover:text-background"
-                                        leftIcon={<svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4v16m8-8H4" /></svg>}
-                                    >
-                                        Offer a Ride
-                                    </Button>
-                                </Link>
+                            {/* CTA Buttons */}
+                            <div className="flex flex-col items-center gap-2">
+                                <div className="flex flex-col sm:flex-row justify-center gap-4 pt-4 w-full sm:w-auto">
+                                    <Link to="/search-rides">
+                                        <Button
+                                            size="lg"
+                                            className="w-full sm:w-auto text-lg h-14 px-8 shadow-[0_0_20px_rgba(82,39,255,0.3)] hover:shadow-[0_0_30px_rgba(82,39,255,0.5)] transition-all duration-300 transform hover:scale-105"
+                                        >
+                                            Find a Ride
+                                        </Button>
+                                    </Link>
+                                    <Link to="/offer-ride">
+                                        <Button
+                                            size="lg"
+                                            variant="outline"
+                                            className="w-full sm:w-auto text-lg h-14 px-8 border-2 border-text/20 text-text hover:bg-surface-elevated hover:border-text/50 hover:text-primary transition-all duration-300"
+                                            leftIcon={<Zap className="w-5 h-5" />}
+                                        >
+                                            Offer a Ride
+                                        </Button>
+                                    </Link>
+                                </div>
+                                <p className="text-xs text-text-muted mt-2 animate-pulse">It takes 10 seconds to find a ride.</p>
                             </div>
 
+                            {/* Popular Routes Section */}
+                            <motion.div
+                                initial={{ opacity: 0, y: 20 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                transition={{ delay: 0.4, duration: 0.6 }}
+                                className="mt-12 max-w-5xl mx-auto w-full px-4"
+                            >
+                                <div className="text-center mb-6">
+                                    <h3 className="text-xl font-semibold text-text mb-2">Popular Routes</h3>
+                                    <p className="text-sm text-text-muted">Tap a route to search instantly. You can refine pickup points on the next screen.</p>
+                                </div>
+
+                                <div className="flex flex-wrap justify-center gap-3">
+                                    {popularRoutes.map((route, idx) => (
+                                        <Link
+                                            key={idx}
+                                            to={`/search-rides?source=${route.from}&destination=${route.to}&date=${getTomorrowDate()}`}
+                                        >
+                                            <motion.div
+                                                whileHover={{ scale: 1.05, y: -2 }}
+                                                whileTap={{ scale: 0.95 }}
+                                                className="group relative overflow-hidden bg-surface/40 backdrop-blur-sm border border-white/10 hover:border-primary/40 rounded-full px-6 py-3 transition-all duration-300 shadow-sm hover:shadow-lg hover:shadow-primary/10 cursor-pointer"
+                                            >
+                                                <div className="absolute inset-0 bg-gradient-to-r from-primary/0 via-primary/5 to-primary/0 translate-x-[-100%] group-hover:translate-x-[100%] transition-transform duration-700" />
+                                                <div className="flex items-center gap-2 text-sm font-medium text-text group-hover:text-primary transition-colors relative z-10">
+                                                    <span>{route.from}</span>
+                                                    <ArrowRight className="w-3 h-3 text-text-muted group-hover:text-primary transition-colors" />
+                                                    <span>{route.to}</span>
+                                                </div>
+                                            </motion.div>
+                                        </Link>
+                                    ))}
+                                </div>
+                            </motion.div>
+
+
                             <div className="pt-8 flex flex-wrap items-center justify-center gap-x-8 gap-y-4 text-sm font-medium text-text-muted">
-                                <div className="flex items-center gap-2">
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.6 }}
+                                    className="flex items-center gap-2"
+                                >
                                     <span className="w-2 h-2 rounded-full bg-success animate-pulse" /> 500+ Active Rides
-                                </div>
-                                <div className="flex items-center gap-2">
-                                    <span className="w-2 h-2 rounded-full bg-warning" /> Verified Profiles
-                                </div>
+                                </motion.div>
+                                <motion.div
+                                    initial={{ opacity: 0 }}
+                                    animate={{ opacity: 1 }}
+                                    transition={{ delay: 0.8 }}
+                                    className="flex items-center gap-2"
+                                >
+                                    <Shield className="w-4 h-4 text-primary" /> Verified Profiles
+                                </motion.div>
                             </div>
                         </motion.div>
                     </div>
@@ -141,23 +193,29 @@ const Home = () => {
                         {features.map((feature, idx) => (
                             <motion.div
                                 key={idx}
-                                initial={{ opacity: 0, y: -40 }} // Start slightly above
-                                whileInView={{ opacity: 1, y: 0 }} // Animate to original position
-                                viewport={{ once: true, margin: "-50px" }} // Trigger slightly before full view
+                                initial={{ opacity: 0, y: -40 }}
+                                whileInView={{ opacity: 1, y: 0 }}
+                                whileHover={{ y: -10 }}
+                                viewport={{ once: true, margin: "-50px" }}
                                 transition={{
                                     duration: 0.6,
-                                    ease: [0.22, 1, 0.36, 1], // Custom cubic-bezier
-                                    delay: idx * 0.1 // Stagger effect
+                                    ease: [0.22, 1, 0.36, 1],
+                                    delay: idx * 0.1
                                 }}
-                                className="bg-surface/40 p-6 lg:p-8 rounded-2xl shadow-xl border border-white/10 hover:bg-surface/60 hover:shadow-2xl hover:border-primary/30 transition-all duration-300 group backdrop-blur-sm"
+                                className="bg-surface/40 p-6 lg:p-8 rounded-2xl shadow-xl border border-white/10 hover:bg-surface/60 hover:shadow-2xl hover:border-primary/30 transition-all duration-300 group backdrop-blur-sm relative overflow-hidden"
                             >
-                                <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-2xl bg-gradient-to-br from-neutral to-surface-elevated flex items-center justify-center mb-6 shadow-inner group-hover:scale-110 transition-transform duration-300">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-primary/5 rounded-full filter blur-[50px] group-hover:bg-primary/10 transition-colors" />
+
+                                <div className="w-14 h-14 lg:w-16 lg:h-16 rounded-2xl bg-gradient-to-br from-neutral to-surface-elevated flex items-center justify-center mb-6 shadow-inner group-hover:scale-110 transition-transform duration-300 relative z-10">
                                     {feature.icon}
                                 </div>
                                 <h3 className="text-xl font-bold font-heading mb-3 group-hover:text-primary transition-colors">{feature.title}</h3>
-                                <p className="text-text-muted leading-relaxed text-sm lg:text-base">
+                                <p className="text-text-muted leading-relaxed text-sm lg:text-base mb-4">
                                     {feature.desc}
                                 </p>
+                                <div className="flex items-center text-primary font-semibold text-sm opacity-0 group-hover:opacity-100 transition-opacity transform translate-x-[-10px] group-hover:translate-x-0 duration-300">
+                                    Learn more <ArrowRight className="w-4 h-4 ml-1" />
+                                </div>
                             </motion.div>
                         ))}
                     </div>
@@ -167,40 +225,63 @@ const Home = () => {
             {/* How It Works */}
             <section id="how-it-works" className="py-20 lg:py-24 bg-transparent scroll-mt-20">
                 <div className="container-custom text-center">
-                    <h2 className="text-3xl md:text-4xl font-bold font-heading mb-12 lg:mb-16 bg-surface/30 inline-block px-8 py-2 rounded-full backdrop-blur-sm">
+                    <h2 className="text-3xl md:text-4xl font-bold font-heading mb-4 bg-surface/30 inline-block px-8 py-2 rounded-full backdrop-blur-sm">
                         How <span className="text-primary">CarConnect</span> Works
                     </h2>
+                    <p className="text-lg text-text-muted mb-12 lg:mb-16">3 simple steps. No hassle.</p>
 
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-12 relative max-w-5xl mx-auto">
                         {/* Connecting Line for Desktop */}
-                        <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-neutral-foreground/20 -z-10"></div>
+                        <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-neutral-foreground/20 -z-10 overflow-hidden">
+                            <motion.div
+                                className="h-full bg-primary"
+                                initial={{ width: "0%" }}
+                                whileInView={{ width: "100%" }}
+                                transition={{ duration: 1.5, ease: "easeInOut" }}
+                            />
+                        </div>
 
                         {/* Step 1 */}
-                        <div className="relative group">
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            whileInView={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.5, delay: 0.2 }}
+                            className="relative group"
+                        >
                             <div className="w-24 h-24 mx-auto bg-surface/80 backdrop-blur-md rounded-full shadow-lg flex items-center justify-center text-3xl font-bold text-primary mb-6 border-4 border-white/10 relative z-10 group-hover:scale-110 transition-transform duration-300">
-                                1
+                                <Search className="w-10 h-10" />
                             </div>
                             <h3 className="text-xl font-bold mb-3 drop-shadow-md">Search</h3>
                             <p className="text-text-muted px-4 font-medium">Enter your destination and date to find verified drivers going your way.</p>
-                        </div>
+                        </motion.div>
 
                         {/* Step 2 */}
-                        <div className="relative group">
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            whileInView={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.5, delay: 0.4 }}
+                            className="relative group"
+                        >
                             <div className="w-24 h-24 mx-auto bg-surface/80 backdrop-blur-md rounded-full shadow-lg flex items-center justify-center text-3xl font-bold text-secondary mb-6 border-4 border-white/10 relative z-10 group-hover:scale-110 transition-transform duration-300">
-                                2
+                                <MessageCircle className="w-10 h-10" />
                             </div>
                             <h3 className="text-xl font-bold mb-3 drop-shadow-md">Request</h3>
                             <p className="text-text-muted px-4 font-medium">Check profile reviews and request a seat strictly through the app.</p>
-                        </div>
+                        </motion.div>
 
                         {/* Step 3 */}
-                        <div className="relative group">
+                        <motion.div
+                            initial={{ scale: 0.8, opacity: 0 }}
+                            whileInView={{ scale: 1, opacity: 1 }}
+                            transition={{ duration: 0.5, delay: 0.6 }}
+                            className="relative group"
+                        >
                             <div className="w-24 h-24 mx-auto bg-surface/80 backdrop-blur-md rounded-full shadow-lg flex items-center justify-center text-3xl font-bold text-success mb-6 border-4 border-white/10 relative z-10 group-hover:scale-110 transition-transform duration-300">
-                                3
+                                <MapPin className="w-10 h-10" />
                             </div>
                             <h3 className="text-xl font-bold mb-3 drop-shadow-md">Travel</h3>
                             <p className="text-text-muted px-4 font-medium">Meet at the pickup point, enjoy the ride, and save money together!</p>
-                        </div>
+                        </motion.div>
                     </div>
                 </div>
             </section>

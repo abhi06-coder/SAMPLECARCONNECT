@@ -2,6 +2,8 @@ import * as turf from '@turf/turf'; // Import turf
 import Ride from '../models/Ride.js';
 import Review from '../models/Review.js';
 import User from '../models/User.js';
+import RideAlert from '../models/RideAlert.js'; // Import RideAlert
+import { sendSMS } from '../services/smsService.js'; // Import sendSMS
 
 // Helper function to calculate distance between two coordinates in km
 function getDistanceFromLatLonInKm(lat1, lon1, lat2, lon2) {
@@ -96,6 +98,33 @@ const createRide = async (req, res) => {
         // console.log("Initialized Segments:", rideData.segmentAvailability);
 
         const createdRide = await createNewRide(rideData, req.user);
+
+        // --- CHECK & NOTIFY ALERTS ---
+        // Find users who have an alert for this Source -> Destination
+        // We use regex for flexibility (e.g. "Mumbai" matches "Mumbai, Maharashtra")
+        const sourcePattern = new RegExp(`^${req.body.source.name.split(',')[0]}`, 'i');
+        const destPattern = new RegExp(`^${req.body.destination.name.split(',')[0]}`, 'i');
+
+        const matchingAlerts = await RideAlert.find({
+            source: { $regex: sourcePattern },
+            destination: { $regex: destPattern }
+        }).populate('user', 'phone');
+
+        if (matchingAlerts.length > 0) {
+            console.log(`[Alerts] Found ${matchingAlerts.length} users waiting for this route.`);
+
+            for (const alert of matchingAlerts) {
+                if (alert.user && alert.user.phone) {
+                    const message = `Good news! A new ride from ${req.body.source.name} to ${req.body.destination.name} has just opened. Book now on CarConnect!`;
+                    // Send SMS
+                    sendSMS({ numbers: alert.user.phone, message }); // Async, don't await loop to prevent blocking
+
+                    // Delete Alert (One-time notification)
+                    await RideAlert.findByIdAndDelete(alert._id);
+                }
+            }
+        }
+        // -----------------------------
 
         res.status(201).json({
             success: true,
@@ -550,6 +579,16 @@ const cancelRide = async (req, res) => {
                 user.isDriver = false; // Revoke driver status
                 await user.save();
 
+                // Create User Report for Admin
+                const UserReport = (await import('../models/UserReport.js')).default;
+                await UserReport.create({
+                    reportedUserId: user._id,
+                    reportedBy: user._id, // System action triggered by user
+                    type: 'Other',
+                    description: `Late Cancellation Penalty. Driver cancelled ride from ${ride.source.name} to ${ride.destination.name} only ${timeDifferenceMinutes.toFixed(0)} minutes before start. Wallet balance of ₹${previousBalance} forfeited and driver status revoked.`,
+                    status: 'Pending'
+                });
+
                 console.log(`⚠️ Late cancellation penalty applied to user ${user._id}. Balance ${previousBalance} → 0`);
 
                 // Delete the ride
@@ -557,7 +596,7 @@ const cancelRide = async (req, res) => {
 
                 return res.json({
                     success: true,
-                    message: `Ride cancelled. Late cancellation penalty applied: ₹${previousBalance} deducted from wallet.`,
+                    message: `Ride cancelled. Late cancellation penalty applied: ₹${previousBalance} deducted from wallet. Incident reported to Admin.`,
                     penaltyApplied: true,
                     penaltyAmount: previousBalance,
                     warning: 'You cancelled within 20 minutes of ride start time. Your wallet balance has been forfeited as penalty.'

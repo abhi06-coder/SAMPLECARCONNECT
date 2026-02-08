@@ -51,6 +51,7 @@ import adminRoutes from './routes/adminRoutes.js';
 import feedbackRoutes from './routes/feedbackRoutes.js';
 import reportRoutes from './routes/reportRoutes.js';
 import announcementRoutes from './routes/announcementRoutes.js';
+import rideAlertRoutes from './routes/rideAlertRoutes.js';
 
 app.use('/api/auth', authRoutes);
 app.use('/api/users', userRoutes);
@@ -63,7 +64,7 @@ app.use('/api/admin', adminRoutes);
 app.use('/api/feedback', feedbackRoutes);
 app.use('/api/reports', reportRoutes);
 app.use('/api/announcements', announcementRoutes);
-
+app.use('/api/alerts', rideAlertRoutes);
 // Socket.io
 // In-memory store for last known locations
 const rideLocations = new Map(); // Driver location: { rideId: locationData }

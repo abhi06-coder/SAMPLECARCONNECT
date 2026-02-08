@@ -10,7 +10,8 @@ import {
     updateReportStatus,
     getAnnouncements,
     createAnnouncement,
-    getAuditLogs
+    getAuditLogs,
+    getDashboardStats
 } from '../controllers/adminController.js';
 import { getRefundRequests, processRefund as processRefundRequest } from '../controllers/refundController.js';
 
@@ -25,6 +26,7 @@ router.route('/users/:id/status').put(updateUserStatus);
 
 // Module 2: Analytics
 router.route('/analytics').get(getRideAnalytics);
+router.route('/dashboard').get(getDashboardStats);
 
 // Module 3: Refunds
 router.route('/refunds').get(getRefundRequests);

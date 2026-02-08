@@ -32,7 +32,7 @@ const bookRide = async (req, res) => {
             updateQuery = {
                 $inc: {
                     "segmentAvailability.$[elem].seats": -seatsBooked, // Update the 'seats' property of the matched element
-                    "availableSeats": -seatsBooked
+                    // "availableSeats": -seatsBooked  <-- REMOVED: Global seats should NOT decrease for segment bookings
                 }
             };
             // Filter elements where elem.index is in range
@@ -88,7 +88,7 @@ const bookRide = async (req, res) => {
         const hasOverbooking = segmentParams.some(seg => {
             const seats = (typeof seg === 'number') ? seg : seg.seats;
             return seats < 0;
-        }) || ride.availableSeats < 0;
+        }); // REMOVED: || ride.availableSeats < 0 (Global seats don't matter for grid)
 
         if (hasOverbooking) {
             // Rollback!
@@ -97,7 +97,7 @@ const bookRide = async (req, res) => {
                 {
                     $inc: {
                         "segmentAvailability.$[elem].seats": seatsBooked,
-                        "availableSeats": seatsBooked
+                        // "availableSeats": seatsBooked <-- REMOVED: No global rollback needed if not decremented
                     }
                 },
                 { arrayFilters: [{ "elem.index": { $gte: pickupGridIndex, $lt: dropoffGridIndex } }] }
@@ -312,7 +312,7 @@ const updateBookingStatus = async (req, res) => {
                     {
                         $inc: {
                             "segmentAvailability.$[elem].seats": booking.seatsBooked,
-                            "availableSeats": booking.seatsBooked // Check if we want global restore too? Yes.
+                            // "availableSeats": booking.seatsBooked // REMOVED: Global seats were not decremented, so don't increment
                         }
                     },
                     {
