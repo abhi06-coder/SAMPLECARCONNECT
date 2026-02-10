@@ -539,35 +539,37 @@ const Profile = () => {
                                                         <span className={`font-bold ml-2 ${user?.walletBalance >= 100 ? 'text-success' : 'text-warning'}`}>
                                                             ₹{user?.walletBalance || 0}
                                                         </span>
-                                                        {user?.walletBalance >= 100 && (
-                                                            <span className="ml-2 text-sm text-muted-foreground">(Can offer rides)</span>
+                                                        {user?.walletBalance >= 100 ? (
+                                                            <span className="ml-2 text-sm text-muted-foreground">(Active Driver)</span>
+                                                        ) : (
+                                                            <span className="ml-2 text-sm text-muted-foreground">(Deposit of ₹100 required)</span>
                                                         )}
                                                     </p>
                                                 </div>
-                                                {user?.walletBalance >= 100 ? (
-                                                    <Button
-                                                        type="button"
-                                                        onClick={() => setShowRefundModal(true)}
-                                                        variant="outline"
-                                                        className="text-error border-error/30 hover:bg-error/5 hover:border-error"
-                                                    >
-                                                        Withdraw Balance
-                                                    </Button>
-                                                ) : user?.walletBalance > 0 ? (
-                                                    <div className="text-xs text-warning">
-                                                        Balance too low to withdraw (need ₹100)
-                                                    </div>
-                                                ) : (
-                                                    <DepositButton
-                                                        onSuccess={handleDepositSuccess}
-                                                        className="shadow-lg shadow-primary/20"
-                                                    />
-                                                )}
+                                                <div className="flex gap-2">
+                                                    {user?.walletBalance > 0 && (
+                                                        <Button
+                                                            type="button"
+                                                            onClick={() => setShowRefundModal(true)}
+                                                            variant="outline"
+                                                            className="text-error border-error/30 hover:bg-error/5 hover:border-error"
+                                                        >
+                                                            Request Refund
+                                                        </Button>
+                                                    )}
+                                                    {user?.walletBalance < 100 && (
+                                                        <DepositButton
+                                                            onSuccess={handleDepositSuccess}
+                                                            className="shadow-lg shadow-primary/20"
+                                                            label={user?.walletBalance > 0 ? "Top-up to ₹100" : "Pay Deposit (₹100)"}
+                                                        />
+                                                    )}
+                                                </div>
                                             </div>
                                             <p className="text-xs text-text-muted bg-neutral p-3 rounded-lg border border-border/50">
                                                 {user?.walletBalance >= 100
-                                                    ? "⚠️ Withdrawing will revoke your driver status. Refunds take 5-7 business days to process."
-                                                    : "Pay ₹100 security deposit to become a driver. This acts as your wallet balance."}
+                                                    ? "⚠️ Withdrawing current balance will revoke your driver status. Refunds take 5-7 business days."
+                                                    : "You need a balance of ₹100 to be an active driver. You can top-up or withdraw your remaining balance."}
                                             </p>
                                         </div>
 

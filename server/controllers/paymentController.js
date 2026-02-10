@@ -71,9 +71,13 @@ const verifyPayment = async (req, res) => {
                 return res.status(404).json({ message: 'User not found' });
             }
 
+            // Corrected Logic: Always set to 100 for Security Deposit.
+            // Even if user has 50, they pay 100 to "refill" the security deposit.
+            // They can't exceed 100 for this specific deposit type.
             user.walletBalance = 100;
             user.razorpayPaymentId = razorpay_payment_id;
             user.razorpayOrderId = razorpay_order_id;
+            user.depositPaid = true; // explicitly mark as paid
 
             // If they already have vehicle details, unlock driver role immediately
             if (user.vehicle && user.vehicle.model && user.vehicle.plateNumber) {
@@ -87,7 +91,8 @@ const verifyPayment = async (req, res) => {
                 message: 'Payment verified and Deposit recorded',
                 user: {
                     isDriver: user.isDriver,
-                    depositPaid: user.depositPaid
+                    depositPaid: user.depositPaid,
+                    walletBalance: user.walletBalance
                 }
             });
         } else {

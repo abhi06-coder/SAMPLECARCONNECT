@@ -20,6 +20,12 @@ const protect = async (req, res, next) => {
 
             req.user = await User.findById(decoded.userId).select('-password');
 
+            if (!req.user) {
+                return res.status(401).json({ message: 'User not found' });
+            }
+
+            // Note: We allow blocked users to "authenticate" (e.g. to see profile or blocking status),
+            // but specific routes should use 'restrictToActive' or check status explicitly.
             next();
         } catch (error) {
             console.error(error);
@@ -38,4 +44,22 @@ const admin = (req, res, next) => {
     }
 };
 
-export { protect, admin };
+const restrictToActive = (req, res, next) => {
+    if (req.user) {
+        if (req.user.status === 'HARD_BLOCKED') {
+            return res.status(403).json({
+                message: 'Your account has been permanently blocked. Please contact support.'
+            });
+        }
+        if (req.user.status === 'SOFT_BLOCKED') {
+            if (req.user.blockedUntil && new Date() < new Date(req.user.blockedUntil)) {
+                return res.status(403).json({
+                    message: `Account blocked until ${new Date(req.user.blockedUntil).toLocaleDateString()}. Restricted access.`
+                });
+            }
+        }
+    }
+    next();
+};
+
+export { protect, admin, restrictToActive };

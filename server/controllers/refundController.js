@@ -113,9 +113,22 @@ const processRefund = async (req, res) => {
 
             const user = await User.findById(refund.driverId);
             if (user) {
-                user.depositPaid = false;
-                user.isDriver = false; // Revoke driver access?
+                console.log(`[REFUND DEBUG] Processing User: ${user._id}`);
+                console.log(`[REFUND DEBUG] Before: Wallet=${user.walletBalance}, IsDriver=${user.isDriver}, DepositPaid=${user.depositPaid}`);
+
+                // user.depositPaid = false; // Virtual, cannot set directly without setter
+                user.isDriver = false; // Revoke driver access
+                user.walletBalance = 0; // Reset wallet balance to 0
+
+                // Clear Payment Details
+                user.razorpayPaymentId = null;
+                user.razorpayOrderId = null;
+                user.paymentDetails = { upiId: '', qrCodeUrl: '' };
+
                 await user.save();
+                console.log(`[REFUND DEBUG] After: Wallet=${user.walletBalance}, IsDriver=${user.isDriver}`);
+            } else {
+                console.log(`[REFUND DEBUG] User not found for DriverID: ${refund.driverId}`);
             }
 
             // Optional: Call Razorpay API to refund if paymentId was stored

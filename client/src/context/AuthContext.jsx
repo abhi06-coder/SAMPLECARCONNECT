@@ -12,25 +12,28 @@ export const AuthProvider = ({ children }) => {
 
     useEffect(() => {
         const checkUserLoggedIn = async () => {
-            try {
-                const userInfo = localStorage.getItem('userInfo');
-                if (userInfo) {
-                    const parsedUser = JSON.parse(userInfo);
-                    setUser(parsedUser); // Set initial state from local storage for speed
-
-                    // Verify token and get fresh data from server
-                    try {
-                        const { data } = await api.get('/users/profile');
-                        setUser(data);
-                        localStorage.setItem('userInfo', JSON.stringify(data));
-                    } catch (apiError) {
-                        console.error("Token invalid or expired", apiError);
-                        logout(); // Clear invalid session
-                    }
+            // 1. Optimistic load from Local Storage for speed
+            const userInfo = localStorage.getItem('userInfo');
+            if (userInfo) {
+                try {
+                    setUser(JSON.parse(userInfo));
+                } catch (e) {
+                    console.error("Error parsing stored user info", e);
                 }
+            }
+
+            // 2. Verify with server (Cookie is source of truth)
+            try {
+                const { data } = await api.get('/users/profile');
+                setUser(data);
+                localStorage.setItem('userInfo', JSON.stringify(data));
             } catch (error) {
                 console.error("Auth check failed", error);
-                localStorage.removeItem('userInfo');
+                // Only clear state if unauthorized (session expired/invalid)
+                if (error.response && error.response.status === 401) {
+                    setUser(null);
+                    localStorage.removeItem('userInfo');
+                }
             } finally {
                 setLoading(false);
             }

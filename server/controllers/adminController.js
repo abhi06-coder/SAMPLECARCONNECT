@@ -1,5 +1,11 @@
 import User from '../models/User.js';
 import AdminActionLog from '../models/AdminActionLog.js';
+import Ride from '../models/Ride.js';
+import RefundRequest from '../models/RefundRequest.js';
+import Feedback from '../models/Feedback.js';
+import UserReport from '../models/UserReport.js';
+import Announcement from '../models/Announcement.js';
+import Razorpay from 'razorpay';
 
 // @desc    Get all users with pagination, search, and filters
 // @route   GET /api/admin/users
@@ -46,7 +52,19 @@ const updateUserStatus = async (req, res) => {
         if (user) {
             const oldStatus = user.status;
             user.status = status || user.status;
-            user.blockedUntil = blockedUntil !== undefined ? blockedUntil : user.blockedUntil;
+
+            // Implement 5-day block rule
+            if (user.status === 'SOFT_BLOCKED' && oldStatus !== 'SOFT_BLOCKED') {
+                const fiveDaysInMillis = 5 * 24 * 60 * 60 * 1000;
+                user.blockedUntil = new Date(Date.now() + fiveDaysInMillis);
+            } else if (user.status === 'ACTIVE') {
+                user.blockedUntil = null;
+                user.blockReason = null;
+            } else {
+                // For custom edits or HARD_BLOCKED, respect provided date or keep existing
+                user.blockedUntil = blockedUntil !== undefined ? blockedUntil : user.blockedUntil;
+            }
+
             user.blockReason = blockReason !== undefined ? blockReason : user.blockReason;
 
             const updatedUser = await user.save();
@@ -111,12 +129,12 @@ const getRideAnalytics = async (req, res) => {
         // If the driver has "Women Only" pref, the ride is women only.
 
         // KPIs
-        const totalRides = await import('../models/Ride.js').then(m => m.default.countDocuments(match));
-        const completedRides = await import('../models/Ride.js').then(m => m.default.countDocuments({ ...match, status: 'completed' }));
-        const cancelledRides = await import('../models/Ride.js').then(m => m.default.countDocuments({ ...match, status: 'cancelled' }));
+        const totalRides = await Ride.countDocuments(match);
+        const completedRides = await Ride.countDocuments({ ...match, status: 'completed' });
+        const cancelledRides = await Ride.countDocuments({ ...match, status: 'cancelled' });
 
         // Average Occupancy
-        const occupancyStats = await import('../models/Ride.js').then(m => m.default.aggregate([
+        const occupancyStats = await Ride.aggregate([
             { $match: match },
             {
                 $project: {
@@ -126,13 +144,13 @@ const getRideAnalytics = async (req, res) => {
                 }
             },
             { $group: { _id: null, avgOccupancy: { $avg: "$occupancyRate" } } }
-        ]));
+        ]);
         const avgOccupancy = occupancyStats[0]?.avgOccupancy || 0;
 
         // Visualizations
 
         // 1. Line Chart: Rides over time
-        const ridesOverTime = await import('../models/Ride.js').then(m => m.default.aggregate([
+        const ridesOverTime = await Ride.aggregate([
             { $match: match },
             {
                 $group: {
@@ -141,7 +159,7 @@ const getRideAnalytics = async (req, res) => {
                 }
             },
             { $sort: { _id: 1 } }
-        ]));
+        ]);
 
         // 2. Bar Chart: Rides per District (using Source Name as proxy for District if no field)
         // This is a rough approximation if we don't have separate district field.
@@ -180,7 +198,7 @@ const getDashboardStats = async (req, res) => {
         // 1. KPI Counts
         const totalUsers = await User.countDocuments({});
 
-        const Ride = (await import('../models/Ride.js')).default;
+        // const Ride = (await import('../models/Ride.js')).default; // Removed dynamic import
         const totalRides = await Ride.countDocuments({});
         const activeRides = await Ride.countDocuments({ status: 'active', dateTime: { $gte: new Date() } });
         const completedRides = await Ride.countDocuments({ status: 'completed' });
@@ -213,10 +231,10 @@ const getDashboardStats = async (req, res) => {
             .populate('driver', 'name email');
 
         // 3. Attention Needed
-        const RefundRequest = (await import('../models/RefundRequest.js')).default;
+        // const RefundRequest = (await import('../models/RefundRequest.js')).default; // Removed dynamic import
         const pendingRefunds = await RefundRequest.countDocuments({ status: 'Pending' });
 
-        const UserReport = (await import('../models/UserReport.js')).default;
+        // const UserReport = (await import('../models/UserReport.js')).default; // Removed dynamic import
         const pendingReports = await UserReport.countDocuments({ status: 'Pending' });
 
         res.json({
@@ -270,13 +288,13 @@ const getRefundRequests = async (req, res) => {
 
         console.log('🔍 Admin Refund Query:', { filter, page, pageSize });
 
-        const count = await import('../models/RefundRequest.js').then(m => m.default.countDocuments(filter));
-        const refunds = await import('../models/RefundRequest.js').then(m => m.default.find(filter)
+        const count = await RefundRequest.countDocuments(filter);
+        const refunds = await RefundRequest.find(filter)
             .populate('driverId', 'name email phone')
             .populate('rideId', 'source destination dateTime price')
             .limit(pageSize)
             .skip(pageSize * (page - 1))
-            .sort({ createdAt: -1 }));
+            .sort({ createdAt: -1 });
 
         console.log('📊 Refunds Found:', { count, returnedCount: refunds.length });
 
@@ -295,7 +313,7 @@ const getRefundRequests = async (req, res) => {
 const processRefundRequest = async (req, res) => {
     try {
         const { status, rejectionReason } = req.body; // status: 'Approved' | 'Rejected'
-        const refund = await import('../models/RefundRequest.js').then(m => m.default.findById(req.params.id));
+        const refund = await RefundRequest.findById(req.params.id);
 
         if (!refund) {
             return res.status(404).json({ message: 'Refund request not found' });
@@ -318,7 +336,7 @@ const processRefundRequest = async (req, res) => {
 
             // Process Razorpay Refund
             try {
-                const Razorpay = (await import('razorpay')).default;
+                // const Razorpay = (await import('razorpay')).default; // Removed dynamic import
                 const razorpay = new Razorpay({
                     key_id: process.env.RAZORPAY_KEY_ID,
                     key_secret: process.env.RAZORPAY_KEY_SECRET,
@@ -356,7 +374,7 @@ const processRefundRequest = async (req, res) => {
                 await refund.save();
 
                 // Log Action
-                const AdminActionLog = (await import('../models/AdminActionLog.js')).default;
+                // const AdminActionLog = (await import('../models/AdminActionLog.js')).default; // Already imported
                 await AdminActionLog.create({
                     adminId: req.user._id,
                     actionType: 'APPROVE_REFUND',
@@ -425,12 +443,12 @@ const getFeedback = async (req, res) => {
 
         const filter = status ? { status } : {};
 
-        const count = await import('../models/Feedback.js').then(m => m.default.countDocuments(filter));
-        const feedback = await import('../models/Feedback.js').then(m => m.default.find(filter)
+        const count = await Feedback.countDocuments(filter);
+        const feedback = await Feedback.find(filter)
             .populate('userId', 'name email')
             .limit(pageSize)
             .skip(pageSize * (page - 1))
-            .sort({ createdAt: -1 }));
+            .sort({ createdAt: -1 });
 
         res.json({ feedback, page, pages: Math.ceil(count / pageSize), total: count });
     } catch (error) {
@@ -444,7 +462,7 @@ const getFeedback = async (req, res) => {
 const replyFeedback = async (req, res) => {
     try {
         const { reply } = req.body;
-        const feedback = await import('../models/Feedback.js').then(m => m.default.findById(req.params.id));
+        const feedback = await Feedback.findById(req.params.id);
 
         if (feedback) {
             feedback.adminReply = reply;
@@ -502,7 +520,7 @@ const getUserReports = async (req, res) => {
 const updateReportStatus = async (req, res) => {
     try {
         const { status, adminNotes } = req.body;
-        const report = await import('../models/UserReport.js').then(m => m.default.findById(req.params.id));
+        const report = await UserReport.findById(req.params.id);
 
         if (report) {
             report.status = status;
@@ -534,7 +552,7 @@ const updateReportStatus = async (req, res) => {
 // @access  Private/Admin
 const getAnnouncements = async (req, res) => {
     try {
-        const announcements = await import('../models/Announcement.js').then(m => m.default.find().sort({ createdAt: -1 }));
+        const announcements = await Announcement.find().sort({ createdAt: -1 });
         res.json(announcements);
     } catch (error) {
         res.status(500).json({ message: error.message });
@@ -548,12 +566,12 @@ const createAnnouncement = async (req, res) => {
     try {
         const { title, message, targetRoles, targetRegions } = req.body;
 
-        const announcement = await import('../models/Announcement.js').then(m => m.default.create({
+        const announcement = await Announcement.create({
             title,
             message,
             targetRoles,
             targetRegions
-        }));
+        });
 
         await AdminActionLog.create({
             adminId: req.user._id,

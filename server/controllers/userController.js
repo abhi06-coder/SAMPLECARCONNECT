@@ -24,8 +24,10 @@ const getUserProfile = async (req, res) => {
         isDriver: req.user.isDriver,
         depositPaid: req.user.depositPaid,
         vehicle: req.user.vehicle,
-        vehicle: req.user.vehicle,
-        paymentDetails: req.user.paymentDetails,
+        walletBalance: req.user.walletBalance,
+        status: req.user.status,
+        blockedUntil: req.user.blockedUntil,
+        blockReason: req.user.blockReason,
     };
     res.status(200).json(user);
 };
@@ -146,8 +148,10 @@ const updateUserProfile = async (req, res) => {
                 depositPaid: updatedUser.depositPaid,
                 vehicle: updatedUser.vehicle,
                 depositPaid: updatedUser.depositPaid,
+                depositPaid: updatedUser.depositPaid,
                 vehicle: updatedUser.vehicle,
                 paymentDetails: updatedUser.paymentDetails,
+                walletBalance: updatedUser.walletBalance,
             });
         } else {
             res.status(404).json({ message: 'User not found' });

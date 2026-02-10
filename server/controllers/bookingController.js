@@ -22,6 +22,10 @@ const bookRide = async (req, res) => {
             return res.status(400).json({ message: 'Invalid Route Segments' });
         }
 
+        if (seatsBooked <= 0) {
+            return res.status(400).json({ message: 'Seats booked must be greater than 0' });
+        }
+
         // SEGMENT-BASED SEAT LOCKING
         let updateQuery;
         let updateOptions = { new: true };
@@ -116,22 +120,17 @@ const bookRide = async (req, res) => {
             return res.status(400).json({ message: 'Cannot book your own ride' });
         }
 
-        // Price Calculation (already done on frontend, but verify?)
-        // Assuming passed or re-calc.
-        // Let's store what frontend passed or re-calc if needed.
-        // For simplicity:
-        const totalPrice = 0; // Field actually not used in prompt spec much, just simulation logs.
+        // Price Calculation (Server-Side)
+        let finalUnitPrice = ride.price; // Default to base price
 
-        // SIMULATION LOGS
-        // "Using a library like Turf.js ... The library will return the exact Lat/Lng" -> Already done in search.
+        if (useGrid && ride.ratePerKm) {
+            // Calculate distance based on grid segments (1 segment = 10km approximation)
+            const segmentDistance = (dropoffGridIndex - pickupGridIndex) * 10;
+            finalUnitPrice = segmentDistance * ride.ratePerKm;
+        }
 
         // 1. Razorpay Simulation
-        const calculatedFare = Math.round((ride.price / (ride.totalDistance || 100)) * (distanceToMeetingPoint || 50)); // Rough re-calc for log? 
-        // Or just use a random logical value if not passed
-        // Actually search passed `estimatedPrice`. We should accept it or re-calc.
-        // We'll trust new param `req.body.price` if added, or just log generic.
-
-        console.log(`[RAZORPAY] Initializing partial payment for ₹${req.body.estimatedPrice || '1500'}`);
+        console.log(`[RAZORPAY] Initializing partial payment for ₹${finalUnitPrice * seatsBooked}`);
 
         // 2. Fast2SMS Simulation
         const meetCoords = meetingPoint ? `${meetingPoint.coordinates[1]}, ${meetingPoint.coordinates[0]}` : 'Highway';
@@ -145,8 +144,7 @@ const bookRide = async (req, res) => {
             ride: rideId,
             passenger: req.user._id,
             seatsBooked,
-            seatsBooked, // This was duplicated in original, keeping or fixing? The replace removes it.
-            totalPrice: (req.body.unitPrice || ride.price) * seatsBooked,
+            totalPrice: finalUnitPrice * seatsBooked, // Server-calculated price
             status: 'pending_approval',
             meetingPoint,
             distanceToMeetingPoint,

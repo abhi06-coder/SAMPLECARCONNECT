@@ -68,7 +68,9 @@ const registerUser = async (req, res) => {
             gender: user.gender,
             emergencyContact: user.emergencyContact,
             travelPreferences: user.travelPreferences,
+            travelPreferences: user.travelPreferences,
             profilePicture: user.profilePicture,
+            walletBalance: user.walletBalance,
         });
     } else {
         res.status(400).json({ message: 'Invalid user data' });
@@ -101,6 +103,10 @@ const loginUser = async (req, res) => {
             isDriver: user.isDriver,
             depositPaid: user.depositPaid,
             vehicle: user.vehicle,
+            walletBalance: user.walletBalance,
+            status: user.status,
+            blockedUntil: user.blockedUntil,
+            blockReason: user.blockReason
         });
     } else {
         res.status(401).json({ message: 'Invalid email or password' });
@@ -172,7 +178,9 @@ const socialLogin = async (req, res) => {
             gender: user.gender,
             emergencyContact: user.emergencyContact,
             travelPreferences: user.travelPreferences,
+            travelPreferences: user.travelPreferences,
             isNewUser, // Flag to trigger profile completion on frontend
+            walletBalance: user.walletBalance,
         });
 
     } catch (error) {

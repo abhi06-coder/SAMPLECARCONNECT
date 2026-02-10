@@ -102,7 +102,7 @@ const UserManagement = () => {
             <Button size="sm" variant="ghost" className="h-8 w-8 p-0 rounded-full">
                 <MoreVertical className="w-4 h-4" />
             </Button>
-            {user.status === 'HARD_BLOCKED' ? (
+            {user.status === 'HARD_BLOCKED' || user.status === 'SOFT_BLOCKED' ? (
                 <Button
                     size="sm"
                     variant="outline"
@@ -117,8 +117,8 @@ const UserManagement = () => {
                     size="sm"
                     variant="danger"
                     className="h-8 px-3 text-xs"
-                    onClick={() => handleBlockUser(user, 'HARD_BLOCKED')}
-                    title="Block User"
+                    onClick={() => handleBlockUser(user, 'SOFT_BLOCKED')}
+                    title="Block User (5 Days)"
                 >
                     <Ban className="w-3 h-3 mr-1" /> Block
                 </Button>

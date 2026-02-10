@@ -47,15 +47,18 @@ const RefundRequests = () => {
 
         if (!window.confirm(`Are you sure you want to ${status} this refund?`)) return;
 
+        const action = status === 'Approved' ? 'approve' : 'reject';
+
         try {
             await api.put(`/admin/refunds/${id}`, {
-                status,
+                action,
                 rejectionReason: reason
             });
 
             fetchRefunds(page);
             alert(`Refund ${status}`);
         } catch (error) {
+            console.error('❌ [Frontend] Process refund error:', error);
             alert('Action failed');
         }
     };
@@ -157,8 +160,8 @@ const RefundRequests = () => {
                             key={s}
                             onClick={() => setFilter(s)}
                             className={`px-4 py-1.5 rounded-full text-xs font-bold transition-all ${filter === s
-                                    ? 'bg-primary text-white shadow-md shadow-primary/20'
-                                    : 'bg-neutral text-text-muted hover:bg-neutral-hover hover:text-text'
+                                ? 'bg-primary text-white shadow-md shadow-primary/20'
+                                : 'bg-neutral text-text-muted hover:bg-neutral-hover hover:text-text'
                                 }`}
                         >
                             {s}

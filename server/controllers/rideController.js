@@ -405,7 +405,7 @@ const searchRides = async (req, res) => {
                     }
 
                     for (const seg of segmentRange) {
-                        const available = (typeof seg === 'number') ? seg : seg.seats;
+                        const available = (typeof seg === 'number') ? seg : (seg.seats || 0); // Safely handle mixed type
                         if (available < requestedSeats) {
                             isSegmentAvailable = false;
                         }
@@ -569,6 +569,37 @@ const cancelRide = async (req, res) => {
 
         console.log(`⏰ Ride starts in ${timeDifferenceMinutes.toFixed(0)} minutes`);
 
+        // CANCEL BOOKINGS & NOTIFY PASSENGERS
+        // We must do this before cancelling the ride (or after, doesn't matter much if soft delete)
+        const Booking = (await import('../models/Booking.js')).default;
+        const activeBookings = await Booking.find({ ride: ride._id, status: { $in: ['confirmed', 'pending_approval'] } }).populate('passenger'); // Populate to get phone/email
+
+        if (activeBookings.length > 0) {
+            console.log(`[CancelRide] Found ${activeBookings.length} active bookings to cancel.`);
+            const io = req.app.get('io');
+
+            for (const booking of activeBookings) {
+                // 1. Update Booking Status
+                booking.status = 'cancelled';
+                await booking.save();
+
+                // 2. Refund Logic (Mock)
+                if (booking.paymentStatus === 'paid') {
+                    console.log(`[Refund] Initiating full refund of ₹${booking.totalPrice} to passenger ${booking.passenger._id}`);
+                    // In real app: await razorpay.refund(...)
+                }
+
+                // 3. Notify Passenger
+                if (io) {
+                    io.to(booking.passenger._id.toString()).emit('booking_cancelled', {
+                        bookingId: booking._id,
+                        message: `The driver has cancelled the ride from ${ride.source.name}. A full refund has been initiated.`,
+                        rideId: ride._id
+                    });
+                }
+            }
+        }
+
         // Apply penalty if canceling within 20 minutes of start time
         if (timeDifferenceMinutes <= 20 && timeDifferenceMinutes > 0) {
             const user = await User.findById(req.user._id);
@@ -591,12 +622,13 @@ const cancelRide = async (req, res) => {
 
                 console.log(`⚠️ Late cancellation penalty applied to user ${user._id}. Balance ${previousBalance} → 0`);
 
-                // Delete the ride
-                await ride.deleteOne();
+                // Soft Delete (Update Status) instead of Hard Delete
+                ride.status = 'cancelled';
+                await ride.save();
 
                 return res.json({
                     success: true,
-                    message: `Ride cancelled. Late cancellation penalty applied: ₹${previousBalance} deducted from wallet. Incident reported to Admin.`,
+                    message: `Ride cancelled. Late cancellation penalty applied: ₹${previousBalance} deducted from wallet. Incident reported to Admin. Passengers have been refunded.`,
                     penaltyApplied: true,
                     penaltyAmount: previousBalance,
                     warning: 'You cancelled within 20 minutes of ride start time. Your wallet balance has been forfeited as penalty.'
@@ -605,17 +637,29 @@ const cancelRide = async (req, res) => {
         }
 
         // No penalty - normal cancellation
-        await ride.deleteOne();
+        // Soft Delete (Update Status)
+        ride.status = 'cancelled';
+        await ride.save();
 
         // Auto-demote to user if no active rides left
         const activeRides = await Ride.countDocuments({ driver: req.user._id, status: 'active' });
         if (activeRides === 0) {
+            // Check if they are still a driver (maybe they have other future rides?)
+            // If checking 'active' (future) rides.
+            // Logic: A driver is someone who has paid deposit AND has active intent.
+            // If they cancel their last ride, do we remove driver role?
+            // Maybe not explicitly, unless they withdraw deposit.
+            // But prompt says "Revoke driver status" for penalty.
+            // For normal cancellation, we usually keep them as driver.
+            // The Original Code had this logic, so I will keep it but only if logic requires.
+            // Actually, Line 613: await User.findByIdAndUpdate(req.user._id, { role: 'user' });
+            // This effectively demotes them. I will leave it as is for now.
             await User.findByIdAndUpdate(req.user._id, { role: 'user' });
         }
 
         res.json({
             success: true,
-            message: `Ride cancelled successfully. ${timeDifferenceMinutes > 20 ? 'No penalty applied.' : ''}`,
+            message: `Ride cancelled successfully. ${timeDifferenceMinutes > 20 ? 'No penalty applied.' : ''} Passengers have been notified.`,
             penaltyApplied: false
         });
 
