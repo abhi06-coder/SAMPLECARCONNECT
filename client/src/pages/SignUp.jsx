@@ -110,6 +110,10 @@ const SignUp = () => {
                 setError("Billing not enabled. Proceeding without verification.");
                 setTimeout(() => handleRegisterSkippingVerification(), 2000);
                 return;
+            } else if (error.code === 'auth/invalid-app-credential') {
+                console.error("Firebase Domain Error: Add this domain to Firebase Console -> Auth -> Settings -> Authorized Domains");
+                setError("Domain not authorized. Check Firebase Console > Auth > Authorized Domains.");
+                setStep('otp-failed');
             } else {
                 setError("Failed to send OTP. Please check the phone number.");
                 setStep('otp-failed');

@@ -13,8 +13,21 @@ const registerUser = async (req, res) => {
     if (phoneVerificationToken) {
         try {
             const decodedToken = await admin.auth().verifyIdToken(phoneVerificationToken);
-            if (decodedToken.phone_number !== phone) {
-                res.status(400).json({ message: 'Phone number verification failed' });
+            
+            // Normalize phone numbers for comparison (remove spaces, dashes, parentheses)
+            const normalizePhone = (p) => p ? p.replace(/[\s\-\(\)]/g, '') : '';
+            
+            const tokenPhone = normalizePhone(decodedToken.phone_number);
+            const requestPhone = normalizePhone(phone);
+
+            // Check if one ends with the other to handle country code differences (e.g. +919876543210 vs 9876543210)
+            const isMatch = tokenPhone === requestPhone || 
+                           tokenPhone.endsWith(requestPhone) || 
+                           requestPhone.endsWith(tokenPhone);
+
+            if (!isMatch) {
+                console.error(`Phone verification failed: Token(${tokenPhone}) vs Request(${requestPhone})`);
+                res.status(400).json({ message: 'Phone number verification failed. Please ensure the number matches.' });
                 return;
             }
             isPhoneVerified = true;
