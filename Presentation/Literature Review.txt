@@ -1,0 +1,12 @@
+| Sr. No. | Authors | Paper Title | Proposed System | Advantages | Disadvantages | Year |
+| :--- | :--- | :--- | :--- | :--- | :--- | :--- |
+| 1 | Shaheen, S. A., & Cohen, A. P. | Shared Mobility Policies | Policy Framework | Structured guidelines | No technical depth | 2019 |
+| 2 | Furuhata, M., et al. | Ridesharing: Future Directions | System Classification | Thorough categorization | Outdated (pre-app) | 2013 |
+| 3 | Agatz, N., et al. | Dynamic Ridesharing Optimization | Optimization Models | rigorous analysis | Computationally heavy | 2012 |
+| 4 | Cui, Y., et al. | Trust in Carpooling | Privacy Mechanism | Enhances security | Complex setup | 2020 |
+| 5 | Wang, L., & Yang, H. | Ride-Sourcing Pricing | Dynamic Pricing | Optimized revenue | Unpredictable costs | 2019 |
+| 6 | Ge, Y., et al. | Energy Efficiency in Shared Mobility | Energy Analysis | Quantifies benefits | Variable effectiveness | 2018 |
+| 7 | Alonso-Mora, J., et al. | High-capacity Ride-sharing | Trip Assignment Algo | Maximizes utility | Needs high demand | 2017 |
+| 8 | Chan, N. D., & Shaheen, S. A. | Ridesharing in North America | Trend Analysis | Deep historical context | Region-specific | 2012 |
+| 9 | Zhang, J., & Tao, F. | Scalable MERN Web Apps | MERN Architecture | High performance | General web focus | 2021 |
+| 10 | Kumar, R., et al. | Geospatial Analysis for Smart City | GIS Integration | Accurate routing | API dependency | 2022 |

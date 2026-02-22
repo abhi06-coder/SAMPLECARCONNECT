@@ -1,0 +1,91 @@
+graph TD
+    %% Styling Definitions
+    classDef client fill:#bbdefb,stroke:#0d47a1,stroke-width:2px,color:#000
+    classDef server fill:#c8e6c9,stroke:#1b5e20,stroke-width:2px,color:#000
+    classDef database fill:#ffecb3,stroke:#ff6f00,stroke-width:2px,color:#000
+    classDef external fill:#e1bee7,stroke:#4a148c,stroke-width:2px,color:#000
+    classDef user fill:#fff,stroke:#333,stroke-width:2px,color:#000,stroke-dasharray: 5 5
+    classDef groupTitle fill:none,stroke:none,color:#333,font-weight:bold,font-size:16px
+
+    User([User]) -->|Interact| Client
+
+    %% FRONTEND LAYER
+    subgraph FrontendGroup [Frontend Layer]
+        direction TB
+        Client[React Frontend]:::client
+        Auth[Firebase Auth]:::external
+        GMap[Google Maps SDK]:::external
+        API[API Gateway]:::server
+        
+        Client -->|Map Rendering| GMap
+        Client -->|Auth Request| Auth
+        Client -->|JSON Data| API
+        
+        API ~~~ Auth
+        
+        %% Label Positioning
+        FE_Label[Frontend Layer]:::groupTitle
+        API --- FE_Label
+        style FrontendGroup fill:#1a237e,stroke:#3949ab,stroke-width:2px,color:#fff
+    end
+
+    %% BACKEND SERVICES LAYER
+    subgraph BackendGroup [Backend Services]
+        direction TB
+        Router[Express Router]:::server
+        Controller[Controllers]:::server
+        VirtualGrid[Virtual Grid Engine]:::server
+        GeoEngine[Geospatial Matcher]:::server
+        PayService[Payment Service]:::server
+        
+        Router -->|Delegate| Controller
+        Controller -->|Logic| VirtualGrid
+        Controller -->|Logic| PayService
+        Controller -->|Logic| GeoEngine
+        
+        %% Label Positioning
+        BE_Label[Backend Services]:::groupTitle
+        VirtualGrid --- BE_Label
+        PayService --- BE_Label
+        GeoEngine --- BE_Label
+        
+        style BackendGroup fill:#1b5e20,stroke:#66bb6a,stroke-width:2px,color:#fff
+    end
+
+    %% DATA & EXTERNAL LAYER
+    subgraph DataGroup [Data & External Integration]
+        direction TB
+        DB[(MongoDB Atlas)]:::database
+        Razorpay[Razorpay Gateway]:::external
+        GoogleAPI[Google Maps API]:::external
+        
+        %% Label Positioning
+        DE_Label[Data & External Integration]:::groupTitle
+        DB --- DE_Label
+        Razorpay --- DE_Label
+        GoogleAPI --- DE_Label
+        
+        style DataGroup fill:#3e2723,stroke:#8d6e63,stroke-width:2px,color:#fff
+    end
+
+    %% INTER-GROUP CONNECTIONS
+    API -->|Route Request| Router
+    Controller -->|Query/Update| DB
+    PayService -->|Process Transaction| Razorpay
+    GeoEngine -->|Directions API| GoogleAPI
+    Auth -.->|Verify Token| API
+    
+    %% Force subgraph Labels to be styled via CSS or Mermaid config if possible, else rely on manual nodes
+    class User user
+    
+    %% Hide edges to labels to make them appear floating at bottom
+    linkStyle 8,9,10,11,12,13,14 stroke-width:0px;
+    %% Note: linkStyle indices are tricky in dynamic graphs. Instead, use invisible links ~~~ if supported or accept faint lines.
+    %% Trying invisible links
+    API ~~~ FE_Label
+    VirtualGrid ~~~ BE_Label
+    PayService ~~~ BE_Label
+    GeoEngine ~~~ BE_Label
+    DB ~~~ DE_Label
+    Razorpay ~~~ DE_Label
+    GoogleAPI ~~~ DE_Label

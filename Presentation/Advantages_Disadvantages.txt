@@ -1,0 +1,14 @@
+# Advantages and Disadvantages
+
+## Slide 1: Advantages of Proposed System
+*   **Optimized Resource Utilization**: Increases vehicle occupancy, reducing per-capita fuel consumption and carbon footprint.
+*   **Economic Efficiency**: Automated fare-splitting and shared costs significantly lower daily commute expenses for riders.
+*   **Enhanced Security**: Mandatory identity verification (Firebase/JWT) and community reviews foster a trust-based ecosystem.
+*   **Convenience & Connectivity**: "Virtual Grid" logic and logic-based routing provide seamless last-mile connectivity and flexible booking options.
+*   **Time Saving**: Real-time matching reduces wait times compared to public transport and eliminates manual coordination delays.
+
+## Slide 2: Disadvantages & Limitations
+*   **Internet Dependency**: The platform requires a stable internet connection for real-time tracking and booking, limiting access in remote areas.
+*   **Adoption Barrier**: Initial reluctance to trust strangers may slow down user acquisition despite verification measures.
+*   **Smartphone Requirement**: Users without modern smartphones cannot access the app or GPS features.
+*   **Route Rigidity**: Drivers may be unwilling to deviate even slightly from their fixed routes, potentially limiting matches for some riders.

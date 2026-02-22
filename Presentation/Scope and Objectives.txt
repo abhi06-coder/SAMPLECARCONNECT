@@ -1,0 +1,14 @@
+# Scope and Objectives
+
+## Product Scope
+The project defines a comprehensive MERN-based carpooling ecosystem featuring:
+*   **Geospatial Matching**: Dynamic ride discovery within a 20km radius using MongoDB geospatial queries.
+*   **Virtual Grid**: Logic-based seat management for multi-segment journeys.
+*   **Trust Layer**: Dual-factor authentication (Firebase/JWT) and community-driven reputation systems.
+*   **Financial Hub**: Integrated Razorpay wallet for seamless, cashless transactions and automated refunds.
+
+## Core Objectives
+*   To democratize access to efficient, route-specific shared mobility.
+*   To eliminate manual coordination friction through automated booking and scheduling.
+*   To ensure user safety via rigorous identity verification and peer accountability.
+*   To promote environmental sustainability by maximizing vehicle occupancy rates.

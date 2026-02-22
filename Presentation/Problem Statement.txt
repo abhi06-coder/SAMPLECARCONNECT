@@ -1,0 +1,3 @@
+# Problem Statement
+
+Urban mobility faces critical challenges: severe traffic congestion, rising pollution, and inefficient single-occupancy vehicle use. Existing solutions lack trust, route coordination, and unified platforms. A secure, optimized carpooling system is essential for sustainable transportation.

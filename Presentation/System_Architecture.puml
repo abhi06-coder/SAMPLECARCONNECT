@@ -1,0 +1,52 @@
+@startuml
+skinparam actorStyle awesome
+
+package "Client Side" {
+  [React Frontend] as Client
+  [Google Maps SDK] as GMapSDK
+}
+
+package "Security Layer" {
+  [Firebase Auth] as Auth
+  [JWT Middleware] as JWT
+}
+
+package "Backend Server (Node.js/Express)" {
+  [API Gateway] as API
+  [Ride Controller] as RideCtrl
+  [Booking Controller] as BookCtrl
+  [Payment Controller] as PayCtrl
+  
+  package "Core Logic" {
+    [Virtual Grid Engine] as Grid
+    [Geospatial Matcher] as Geo
+  }
+}
+
+package "Data & Integration" {
+  database "MongoDB Atlas" as DB
+  [Razorpay Gateway] as Razorpay
+  [Google Maps API] as GoogleAPI
+}
+
+Client -> Auth : Login/Register
+Auth -> Client : ID Token
+Client -> API : HTTP Requests (with Token)
+API -> JWT : Validate Token
+
+API --> RideCtrl
+API --> BookCtrl
+API --> PayCtrl
+
+RideCtrl --> Geo : Find Routes
+BookCtrl --> Grid : Manage Seats
+PayCtrl --> Razorpay : Process Transaction
+
+Geo --> GoogleAPI : Directions/Geocoding
+Client --> GMapSDK : Visualize Route
+
+RideCtrl --> DB : Store/Fetch Rides
+BookCtrl --> DB : Update Bookings
+PayCtrl --> DB : Log Transactions
+
+@enduml

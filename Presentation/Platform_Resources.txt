@@ -1,0 +1,20 @@
+# Platform / Equipment / Resources
+
+## Slide 1: Software & Platform Resources
+
+*   **Frontend**: React.js (v18+) with TailwindCSS for responsive UI; Google Maps SDK for geospatial visualization.
+*   **Backend**: Node.js & Express.js for scalable RESTful API architecture.
+*   **Database**: MongoDB Atlas (Cloud) for flexible, schema-less data storage with Geospatial indexing.
+*   **Authentication**: Firebase Auth (Phone/Google) & JWT for secure session management.
+*   **External APIs**: Razorpay (Payments), Google Maps Platform (Directions/Places).
+
+## Slide 2: Hardware & Equipment Resources
+
+*   **Server / Dev Machine**:
+    *   **Processor**: Dual-Core (i3/Ryzen 3) or better.
+    *   **RAM**: 8GB Minimum (16GB Recommended).
+    *   **Storage**: 500MB+ for project files & dependencies.
+*   **Client Devices**:
+    *   **Smartphones**: Android/iOS with GPS capabilities.
+    *   **Desktops/Laptops**: Modern browsers (Chrome, Edge, Safari).
+    *   **Connectivity**: Stable Internet (4G/5G/Wi-Fi) for real-time socket communication.

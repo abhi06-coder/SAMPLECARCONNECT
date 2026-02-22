@@ -1,0 +1,88 @@
+graph TD
+    %% Styling Definitions
+    classDef blueBox fill:#bbdefb,stroke:#0d47a1,stroke-width:2px,color:#000
+    classDef greenBox fill:#c8e6c9,stroke:#1b5e20,stroke-width:2px,color:#000
+    classDef orangeBox fill:#ffecb3,stroke:#ff6f00,stroke-width:2px,color:#000
+    classDef db fill:#dcedc8,stroke:#33691e,stroke-width:2px,color:#000
+    classDef title fill:none,stroke:none,color:#000,font-weight:bold,font-size:16px
+
+    %% Main Flow
+    Login[Login Interface]:::blueBox
+    Auth[Authentication Using Firebase]:::blueBox
+    Redirect[Redirect Based on Role\n Driver / Passenger]:::blueBox
+
+    Login --> Auth
+    Auth --> Redirect
+
+    %% PASSENGER DASHBOARD
+    subgraph PassengerGroup [Passenger Dashboard]
+        direction TB
+        Search[Search Rides]:::blueBox
+        Book[Book Ride]:::blueBox
+        PWallet[Manage Wallet]:::blueBox
+        
+        %% Connections inside
+        Search ~~~ Book
+        Book ~~~ PWallet
+        
+        %% Label
+        PL[Passenger Dashboard]:::title
+        PWallet --- PL
+        style PassengerGroup fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    end
+
+    %% DRIVER DASHBOARD
+    subgraph DriverGroup [Driver Dashboard]
+        direction TB
+        Offer[Offer Ride]:::blueBox
+        Manage[Manage Requests]:::blueBox
+        DWallet[View Earnings]:::blueBox
+        Vehicle[Vehicle Mgmt]:::blueBox
+
+        %% Connections inside
+        Offer ~~~ Manage
+        Manage ~~~ Vehicle
+        Vehicle ~~~ DWallet
+        
+        %% Label
+        DL[Driver Dashboard]:::title
+        Vehicle --- DL
+        style DriverGroup fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    end
+
+    %% MATCHING ENGINE
+    subgraph EngineGroup [Real-Time Matching Engine]
+        direction TB
+        Geo[Geospatial Search 20km]:::blueBox
+        Grid[Virtual Grid Logic]:::blueBox
+        Route[Route Optimization]:::blueBox
+        Fare[Fare Calculation]:::blueBox
+
+        %% Connections inside
+        Geo ~~~ Grid
+        Grid ~~~ Route
+        Route ~~~ Fare
+        
+        %% Label
+        EL[Real-Time Engine]:::title
+        Fare --- EL
+        style EngineGroup fill:#e3f2fd,stroke:#1565c0,stroke-width:2px
+    end
+    
+    %% Connections
+    Redirect -->|Passenger| PassengerGroup
+    Redirect -->|Driver| DriverGroup
+    
+    PassengerGroup -->|Search & Book| EngineGroup
+    DriverGroup -->|Publish Ride| EngineGroup
+    
+    %% DATABASE
+    DB[(MongoDB Atlas)]:::db
+    
+    EngineGroup -->|Read/Write| DB
+    PassengerGroup -->|Read/Write Bookings| DB
+    DriverGroup -->|Read/Write Rides| DB
+    Auth -->|Verify| DB
+
+    %% Database Styling as Cylinder
+    class DB db

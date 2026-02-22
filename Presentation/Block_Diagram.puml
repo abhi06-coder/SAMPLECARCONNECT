@@ -1,0 +1,60 @@
+@startuml
+skinparam componentStyle rectangle
+
+' Global Styles
+skinparam rectangle {
+    BackgroundColor<<Blue>> #BBDEFB
+    BorderColor<<Blue>> #0D47A1
+    BackgroundColor<<Green>> #C8E6C9
+    BorderColor<<Green>> #1B5E20
+    BackgroundColor<<Orange>> #FFECB3
+    BorderColor<<Orange>> #FF6F00
+}
+skinparam databaseBackgroundColor #DCEDC8
+skinparam databaseBorderColor #33691E
+
+' Main Flow
+rectangle "Login Interface" as Login <<Blue>>
+rectangle "Authentication Using Firebase" as Auth <<Blue>>
+rectangle "Redirect Based on Role\n(Driver / Passenger)" as Redirect <<Blue>>
+
+Login -down-> Auth
+Auth -down-> Redirect
+
+' Passenger Dashboard
+rectangle "Passenger Dashboard" as PDash <<Blue>> {
+    rectangle "Search Rides" as Search <<Blue>>
+    rectangle "Book Ride" as Book <<Blue>>
+    rectangle "Manage Wallet" as PWallet <<Blue>>
+}
+
+' Driver Dashboard
+rectangle "Driver Dashboard" as DDash <<Blue>> {
+    rectangle "Offer Ride" as Offer <<Blue>>
+    rectangle "Manage Requests" as Manage <<Blue>>
+    rectangle "Vehicle Mgmt" as Vehicle <<Blue>>
+    rectangle "View Earnings" as DWallet <<Blue>>
+}
+
+' Matching Engine
+rectangle "Real-Time Matching Engine" as Engine <<Blue>> {
+    rectangle "Geospatial Search" as Geo <<Blue>>
+    rectangle "Virtual Grid Logic" as Grid <<Blue>>
+    rectangle "Route Optimization" as Route <<Blue>>
+    rectangle "Fare Calculation" as Fare <<Blue>>
+}
+
+' Database
+database "MongoDB Atlas" as DB
+
+' Connections
+Redirect -left-> PDash
+Redirect -right-> DDash
+
+PDash -down-> Engine : Search & Book
+DDash -down-> Engine : Global Ride State
+
+Engine -down-> DB : Read/Write
+Auth -down-> DB : Verify User
+
+@enduml

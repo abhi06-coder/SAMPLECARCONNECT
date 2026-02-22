@@ -1,0 +1,181 @@
+6.5.5 Test Cases
+
+Test cases for CarConnect are designed to ensure that all features function as expected. Each test case includes details like test ID, description, expected output, actual output, and status.
+
+6.5.5.1 User Authentication
+This section verifies the authentication processes, including user login, registration, and logout.
+
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| Test  | Test Case Description       | Input               | Expected Output               | Actual Output                 | Status |
+| ID    |                             |                     |                               |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC01  | User Login with valid       | Valid Email &       | Successful Login              | User logged in successfully   | Pass   |
+|       | credentials                 | Password            |                               |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC02  | User Login with invalid     | Incorrect           | Error message:                | Displayed error message as    | Pass   |
+|       | credentials                 | Email/Password      | "Invalid credentials"         | expected                      |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC03  | User Registration           | New Email, Name,    | Account created and           | Account created successfully  | Pass   |
+|       | Logic                       | Password            | confirmation sent             |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC04  | Duplicate Registration      | Existing Email      | Error message:                | Error: "Email already exists" | Pass   |
+|       | check                       |                     | "Email already in use"        | displayed                     |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+
+Table No. 6.5.5.1 User Authentication Test Cases
+
+6.5.5.2 Ride Discovery (Search)
+This section ensures users can efficiently find rides based on their criteria.
+
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| Test  | Test Case Description       | Input               | Expected Output               | Actual Output                 | Status |
+| ID    |                             |                     |                               |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC05  | Search by Route             | Source: Nashik,     | List of rides matching        | Relevant rides displayed      | Pass   |
+|       |                             | Dest: Pune          | route path                    | successfully                  |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC06  | Filter by Date              | Select specific     | Only rides for selected       | Rides filtered correctly      | Pass   |
+|       |                             | date                | date displayed                |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC07  | Valid Seat Availability     | Filter: 2 seats     | Rides with >= 2 seats         | Correct availability shown    | Pass   |
+|       |                             |                     | shown                         |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC08  | No Rides Found              | Invalid Route       | "No rides found" message      | Proper fallback message       | Pass   |
+|       |                             |                     |                               | shown                         |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+
+Table No. 6.5.5.2 Ride Discovery Test Cases
+
+6.5.5.3 Ride Offer (Driver)
+This section tests the driver's ability to create and manage ride listings.
+
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| Test  | Test Case Description       | Input               | Expected Output               | Actual Output                 | Status |
+| ID    |                             |                     |                               |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC09  | Create New Ride             | Route details,      | Ride created and              | Ride listed successfully      | Pass   |
+|       |                             | Price, Date         | visible in search             |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC10  | Validation check for        | Past Date           | Error: "Date must be          | Validation error displayed    | Pass   |
+|       | Date                        |                     | in future"                    |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC11  | Edit Ride Details           | New Time/Price      | Updates reflected             | Ride updated successfully     | Pass   |
+|       |                             |                     | immediately                   |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC12  | Cancel Active Ride          | Click 'Cancel'      | Status -> Cancelled,          | Ride cancelled, passengers    | Pass   |
+|       |                             |                     | Passengers notified           | notified                      |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+
+Table No. 6.5.5.3 Ride Offer Test Cases
+
+6.5.5.4 Booking Management
+This section validates the booking workflow between passengers and drivers.
+
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| Test  | Test Case Description       | Input               | Expected Output               | Actual Output                 | Status |
+| ID    |                             |                     |                               |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC13  | Book User Seat              | Select Seat,        | Booking status:               | Booking request sent          | Pass   |
+|       |                             | Click Book          | "Pending"                     |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC14  | Driver Accepts Booking      | Click 'Accept'      | Booking status:               | User notified of              | Pass   |
+|       |                             | on Request          | "Confirmed"                   | confirmation                  |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC15  | Driver Rejects Booking      | Click 'Reject'      | Booking status:               | User notified of              | Pass   |
+|       |                             |                     | "Rejected"                    | rejection                     |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC16  | Prevent Double Booking      | Book same ride      | Error: "Already               | Duplicate booking prevented   | Pass   |
+|       |                             | twice               | booked"                       |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+
+Table No. 6.5.5.4 Booking Management Test Cases
+
+6.5.5.5 Wallet & Security Deposit
+This section checks the financial transactions and deposit logic.
+
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| Test  | Test Case Description       | Input               | Expected Output               | Actual Output                 | Status |
+| ID    |                             |                     |                               |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC17  | Add Security Deposit        | Pay ₹100 via        | Payment verified,             | Wallet Balance = ₹100,        | Pass   |
+|       | (Success)                   | Razorpay            | Wallet=₹100, DepositPaid=True | User role updated to Driver   |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC18  | Add Deposit Failure         | Invalid Payment     | Error: "Payment               | Transaction rejected,         | Pass   |
+|       | (Signature)                 | Signature           | verification failed"          | Balance unchanged             |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC19  | Withdraw Deposit            | Click 'Withdraw',   | Refund Request created,       | Request submitted,            | Pass   |
+|       | Request                     | Enter Reason        | Status "Pending"              | Status: Pending               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC20  | Withdraw Invalid            | Request withdraw    | Error: "No wallet             | Withdrawal blocked            | Pass   |
+|       | (Zero Balance)              | with ₹0 Balance     | balance available"            |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+
+Table No. 6.5.5.5 Wallet Test Cases
+
+6.5.5.6 User Profile & Vehicles
+This section covers profile customization and vehicle management.
+
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| Test  | Test Case Description       | Input               | Expected Output               | Actual Output                 | Status |
+| ID    |                             |                     |                               |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC21  | Add Vehicle Details         | Model, Plate No     | Vehicle added to              | Vehicle listed on profile     | Pass   |
+|       |                             |                     | profile                       |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC22  | Update Bio/Preferences      | Edit Profile        | Profile details               | Profile updated               | Pass   |
+|       |                             |                     | updated                       |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC23  | Switch to Driver Role       | Add Vehicle &       | User role updates             | Role switched to Driver       | Pass   |
+|       |                             | Pay Deposit         | to 'Driver'                   |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC24  | Upload Profile Picture      | Upload Image        | Image saved and               | Picture updated               | Pass   |
+|       |                             |                     | displayed                     |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+
+Table No. 6.5.5.6 Profile Test Cases
+
+6.5.5.7 Reviews & Ratings
+This section verifies the feedback system.
+
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| Test  | Test Case Description       | Input               | Expected Output               | Actual Output                 | Status |
+| ID    |                             |                     |                               |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC25  | Submit Ride Review          | Rating (1-5) &      | Review saved for              | Review visible on             | Pass   |
+|       |                             | Comment             | driver                        | driver profile                |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC26  | Calculate Avg Rating        | New 5-star          | Driver's avg rating           | Rating recalculated           | Pass   |
+|       |                             | review              | increases                     | correctly                     |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC27  | View Reviews                | Open Profile        | List of past reviews          | Reviews displayed             | Pass   |
+|       |                             |                     | shown                         |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC28  | Prevent Self-Review         | Review self         | Error: "Cannot                | Review action blocked         | Pass   |
+|       |                             |                     | review own profile"           |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+
+Table No. 6.5.5.7 Review Test Cases
+
+6.5.5.8 Admin Actions
+This section verifies administrative control over users, payments, and system communications.
+
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| Test  | Test Case Description       | Input               | Expected Output               | Actual Output                 | Status |
+| ID    |                             |                     |                               |                               |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC29  | Block User (Soft Block)     | Select User,        | User status -> "Soft          | User blocked for 5 days,      | Pass   |
+|       |                             | Status: Soft Block  | Blocked" (5 days)             | action logged                 |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC30  | Approve Refund Request      | Select Request,     | Refund processed, User        | Refund successful,            | Pass   |
+|       |                             | Click Approve       | wallet reset, Role revoked    | Wallet=0, Role=User           |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC31  | Reject Refund Request       | Click Reject,       | Request status -> Rejected,   | Rejection recorded with       | Pass   |
+|       |                             | Enter Reason        | Reason logged                 | reason                        |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+| TC32  | Send System Announcement    | Title, Message,     | Announcement visible          | Notification sent to          | Pass   |
+|       |                             | Target Role         | to target users               | target users                  |        |
++-------+-----------------------------+---------------------+-------------------------------+-------------------------------+--------+
+
+Table No. 6.5.5.8 Admin Actions Test Cases
+
+Each test case was executed, reviewed, and passed, ensuring a secure, efficient, and user-friendly platform.

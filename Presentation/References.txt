@@ -1,0 +1,16 @@
+# References
+
+## Academic Papers
+1.  Shaheen, S. A., & Cohen, A. P. (2019). "Shared Mobility Policies: Design and Implementation." *Transportation Research Part A: Policy and Practice*.
+2.  Furuhata, M., et al. (2013). "Ridesharing: The State-of-the-Art and Future Directions." *Transportation Research Part B: Methodological*.
+3.  Teodorović, D., & Dell'Orco, M. (2008). "Bee Colony Optimization (BCO) for the Ride-Matching Problem." *Expert Systems with Applications*.
+4.  Cici, G., et al. (2014). "Assessing the Potential of Ride-Sharing Using Mobile Data." *ACM Transactions on Intelligent Systems and Technology*.
+5.  Stiglic, M., et al. (2015). "The Benefits of Meeting Points in Ride-Sharing Systems." *Transportation Research Part B*.
+6.  Agatz, N., et al. (2012). "Optimization for Dynamic Ride-Sharing: A Review." *European Journal of Operational Research*.
+
+## Technology Documentation & Websites
+7.  React Documentation. (2023). *React: The Library for Web and Native User Interfaces*. Retrieved from https://react.dev/
+8.  MongoDB. (2023). *The Developer Data Platform*. Retrieved from https://www.mongodb.com/docs/
+9.  Google Maps Platform. (2023). *Maps JavaScript API Overview*. Retrieved from https://developers.google.com/maps/documentation/javascript
+10. Razorpay. (2023). *Payment Gateway Integration Guide*. Retrieved from https://razorpay.com/docs/
+11. Firebase. (2023). *Firebase Authentication and Admin SDK*. Retrieved from https://firebase.google.com/docs
